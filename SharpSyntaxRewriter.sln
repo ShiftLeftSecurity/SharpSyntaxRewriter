@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.809.10
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSyntaxRewriter", "src\SharpSyntaxRewriter\SharpSyntaxRewriter.csproj", "{6BDE0585-8FA8-4444-AA8C-19E21344D98A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{80903C4F-608F-4B55-B03F-8C208224A9B6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5A2CEA24-2C1D-4075-B60D-7D2958A14ECA}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BDE0585-8FA8-4444-AA8C-19E21344D98A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BDE0585-8FA8-4444-AA8C-19E21344D98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BDE0585-8FA8-4444-AA8C-19E21344D98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BDE0585-8FA8-4444-AA8C-19E21344D98A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80903C4F-608F-4B55-B03F-8C208224A9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80903C4F-608F-4B55-B03F-8C208224A9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80903C4F-608F-4B55-B03F-8C208224A9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80903C4F-608F-4B55-B03F-8C208224A9B6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {56DB9DCA-4102-41A8-B416-DED616795756}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>SharpSyntaxRewriter</PackageId>
+    <PackageVersion>1.0.16</PackageVersion>
+    <Authors>Leandro T. C. Melo</Authors>
+    <Copyright>ShiftLeft Inc.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Owners>ShiftLeft Inc. (https://shiftleft.io/)</Owners>
+    <Title>(C) Sharp Syntax Rewriter</Title>
+    <Description>The Roslyn-based (C) Sharp Syntax Rewriter Tool</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Rewriters\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Constants\" />
+    <Folder Include="Rewriters\Helpers\" />
+    <Folder Include="Adapters\" />
+    <Folder Include="Utilities\" />
+    <Folder Include="Rewriters\Types\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+  </ItemGroup>
+
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <StandardHeader IncludeInNewFiles="True" Text="Copyright 2021 ShiftLeft, Inc.&#xA;Author: ${AuthorName}" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+
+</Project>
