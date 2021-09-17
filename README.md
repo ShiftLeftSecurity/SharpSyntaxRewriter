@@ -2,7 +2,7 @@
 
 # The (C) Sharp Syntax Rewriter Tool
 
-This is a [Roslyn](https://github.com/dotnet/roslyn)-based tool for C# syntax rewriting.
+This is a [Roslyn](https://github.com/dotnet/roslyn)-based tool for C# syntax rewriting with the purpose of source-code lowering.
 
 ## Design
 
