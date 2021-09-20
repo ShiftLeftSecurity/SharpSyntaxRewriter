@@ -339,7 +339,7 @@ namespace SharpSyntaxRewriter.Rewriters
             {
                 case ITypeParameterSymbol tyParamSym:
                     tyParmsNames.Add(tyParamSym.Name);
-                    return tyParmsNames;
+                    break;
 
                 case INamedTypeSymbol namedTySym:
                     if (namedTySym.IsAnonymousType)
@@ -359,11 +359,13 @@ namespace SharpSyntaxRewriter.Rewriters
                             sym => tyParmsNames.AddRange(
                                 CollectTypeParameterNamesOfAnonymousType(sym)));
                     }
-                    return tyParmsNames;
+                    break;
 
                 default:
+                    Debug.Fail("unexpected");
                     return null;
             }
+            return tyParmsNames;
         }
 
         private string SynthesizeTypeDeclaration(
