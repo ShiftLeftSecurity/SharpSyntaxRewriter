@@ -360,10 +360,6 @@ namespace SharpSyntaxRewriter.Rewriters
                                 CollectTypeParameterNamesOfAnonymousType(sym)));
                     }
                     break;
-
-                default:
-                    Debug.Fail("unexpected");
-                    return null;
             }
             return tyParmsNames;
         }
