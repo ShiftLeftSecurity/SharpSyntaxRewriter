@@ -89,16 +89,16 @@ namespace SharpSyntaxRewriter.Adapters
         public SyntaxNode AdaptedSyntax { get; }
 
         public AdaptedAccessorMethod(AccessorDeclarationSyntax node,
-                                     BasePropertyDeclarationSyntax propNode = null)
+                                     BasePropertyDeclarationSyntax propDecl = null)
         {
             AdaptedSyntax = node;
-            __propNode = propNode;
+            __propDecl = propDecl;
         }
 
-        private readonly BasePropertyDeclarationSyntax __propNode;
+        private readonly BasePropertyDeclarationSyntax __propDecl;
 
         public AccessorDeclarationSyntax Cast => (AccessorDeclarationSyntax)AdaptedSyntax;
-        public SyntaxTokenList Modifiers => __propNode.Modifiers;
+        public SyntaxTokenList Modifiers => __propDecl.Modifiers;
         public BlockSyntax Body => Cast.Body;
         public ExpressionSyntax ExpressionBody => Cast.ExpressionBody?.Expression;
         public List<ParameterSyntax> ParameterList => new();

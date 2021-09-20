@@ -98,15 +98,36 @@ namespace SharpSyntaxRewriter.Rewriters
                                               new AdaptedBaseMethodDeclaration(node));
         }
 
-        private PropertyDeclarationSyntax __propDecl;
+        private BasePropertyDeclarationSyntax __propDecl;
 
-        public override SyntaxNode VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        private SyntaxNode VisitBasePropertyDeclaration<PropertyDeclarationT>(
+                PropertyDeclarationT node,
+                Func<PropertyDeclarationT, SyntaxNode> visit)
+            where PropertyDeclarationT : BasePropertyDeclarationSyntax
         {
             __propDecl = node;
-            var node_P = base.VisitPropertyDeclaration(node);
+            var node_P = visit(node);
             __propDecl = null;
 
             return node_P;
+        }
+
+        public override SyntaxNode VisitIndexerDeclaration(IndexerDeclarationSyntax node)
+        {
+            return VisitBasePropertyDeclaration(node,
+                                                base.VisitIndexerDeclaration);
+        }
+
+        public override SyntaxNode VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        {
+            return VisitBasePropertyDeclaration(node,
+                                                base.VisitPropertyDeclaration);
+        }
+
+        public override SyntaxNode VisitEventDeclaration(EventDeclarationSyntax node)
+        {
+            return VisitBasePropertyDeclaration(node,
+                                                base.VisitEventDeclaration);
         }
 
         public override SyntaxNode VisitAccessorDeclaration(AccessorDeclarationSyntax node)

@@ -116,6 +116,40 @@ public class Example
         }
 
         [TestMethod]
+        public void TestImposeExplicitReturnIndexerAccessor()
+        {
+            var original = @"
+class CCC
+{
+    public int iii;
+    public string sss;
+
+    public string this[int qqq]
+    {
+        get { return ""foo""; }
+        set { iii = qqq; sss = value; }
+    }
+}
+";
+
+            var expected = @"
+class CCC
+{
+    public int iii;
+    public string sss;
+
+    public string this[int qqq]
+    {
+        get { return ""foo""; }
+        set { iii = qqq; sss = value; return ;}
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
         public void TestImposeExplicitReturnLambdaWithBody()
         {
             // It's expected that lambdas with expression-body first
