@@ -1,6 +1,8 @@
 ﻿// Copyright 2021 ShiftLeft, Inc.
 // Author: Leandro T. C. Melo
 
+#define DEBUG_SYNTAX
+
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -11,12 +13,12 @@ namespace Tests
 {
     public class BaseTester
     {
-        private Compiler compiler__;
+        private Compiler __compiler;
 
         [TestInitialize]
         public void InitializeTest()
         {
-            compiler__ = new();
+            __compiler = new();
         }
 
         [TestCleanup]
@@ -25,7 +27,7 @@ namespace Tests
 
         protected Compilation TestCompilationFromSyntaxTrees(params SyntaxTree[] trees)
         {
-            var compilation = compiler__.CompileSyntaxTrees(trees);
+            var compilation = __compiler.CompileSyntaxTrees(trees);
             CheckCompilation(compilation);
             return compilation;
         }
@@ -33,22 +35,28 @@ namespace Tests
         protected (Compilation, List<SyntaxTree>)
             TestCompilationFromSourceTexts(params string[] srcs)
         {
-            var (compilation, trees) = compiler__.CompileSourceTexts(srcs);
+            var (compilation, trees) = __compiler.CompileSourceTexts(srcs);
             CheckCompilation(compilation);
             return (compilation, trees);
         }
 
-        protected void CheckCompilation(Compilation compilation)
+        protected static void CheckCompilation(Compilation compilation)
         {
-            // Always write the diagnostics for convenience. (`stdout'
-            // is only flushed upon hard failures.)
-            compilation.GetDiagnostics().ToList().ForEach(Console.WriteLine);
+            var errorCnt = compilation.GetDiagnostics()
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Count();
 
-            Assert.AreEqual(
-                0,
+#if DEBUG_SYNTAX
+            if (errorCnt != 0)
+            {
                 compilation.GetDiagnostics()
-                           .Where(d => d.Severity == DiagnosticSeverity.Error)
-                           .Count());
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .ToList().ForEach(Console.WriteLine);
+                compilation.SyntaxTrees.ToList().ForEach(Console.WriteLine);
+            }
+#endif
+
+            Assert.AreEqual(0, errorCnt);
         }
     }
 }

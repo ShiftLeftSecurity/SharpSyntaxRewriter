@@ -4,6 +4,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+
 using SharpSyntaxRewriter.Extensions;
 
 namespace SharpSyntaxRewriter.Utilities
@@ -22,7 +24,7 @@ namespace SharpSyntaxRewriter.Utilities
             if (retTySym is INamedTypeSymbol namedTySym)
             {
                 return namedTySym.SpecialType == SpecialType.System_Void
-                        || (isAsync && namedTySym.IsTask());
+                        || (isAsync && namedTySym.IsVoidTask());
             }
             return false;
         }
