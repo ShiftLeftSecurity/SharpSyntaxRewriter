@@ -455,5 +455,63 @@ class Test
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestBlockifyExpressionBodyGenericNonVoidTask()
+        {
+            var original = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Data {}
+
+class CCC
+{
+    private async Task<Data> Get() { return null; }
+
+    async Task<Data> f()
+    {
+        List<int> seriesWithPerson = null;
+        var infos = (await Task.WhenAll(seriesWithPerson.Select(
+                                            async i =>
+                                            await Get()))
+                    ).Where(i => i != null);
+
+        return null;
+    }
+}
+";
+
+            var expected = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Data {}
+
+class CCC
+{
+    private async Task<Data> Get() { return null; }
+
+    async Task<Data> f()
+    {
+        List<int> seriesWithPerson = null;
+        var infos = (await Task.WhenAll(seriesWithPerson.Select(
+                                            async i =>
+                                            { return await Get(); }))
+                    ).Where(i => { return i != null; });
+
+        return null;
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }

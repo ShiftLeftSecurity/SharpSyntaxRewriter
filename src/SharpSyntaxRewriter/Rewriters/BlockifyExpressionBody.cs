@@ -20,31 +20,32 @@ namespace SharpSyntaxRewriter.Rewriters
             return "<blockify expression body>";
         }
 
-        private static BlockSyntax WrapInBlock(ExpressionSyntax exprNode,
+        private static BlockSyntax WrapInBlock(ExpressionSyntax expr,
                                                bool withValuedRet)
         {
-            Debug.Assert(exprNode != null);
+            Debug.Assert(expr != null);
 
             var blockNode =
                 SyntaxFactory.Block(
-                    exprNode is ThrowExpressionSyntax throwExpr
+                    expr is ThrowExpressionSyntax throwExpr
                         ? SyntaxFactory.ThrowStatement(throwExpr.Expression)
                         : withValuedRet
-                            ? SyntaxFactory.ReturnStatement(exprNode.WithoutTrivia())
-                            : SyntaxFactory.ExpressionStatement(exprNode.WithoutTrivia()));
+                            ? SyntaxFactory.ReturnStatement(expr.WithoutTrivia())
+                            : SyntaxFactory.ExpressionStatement(expr.WithoutTrivia()));
 
             return blockNode;
         }
 
-        private static BlockSyntax VisitThroughAdapter(IFunctionSyntaxAdapter funcAdapter,
-                                                       TypeSyntax retTySpec)
+        private BlockSyntax VisitThroughAdapter(IFunctionSyntaxAdapter funcAdapter,
+                                                TypeSyntax retTySpec)
         {
             Debug.Assert(funcAdapter.ExpressionBody != null);
 
             if (retTySpec != null
                     && ReturnTypeInfo.ImpliesVoid(
                             retTySpec,
-                            ModifiersChecker.Has_async(funcAdapter.Modifiers)))
+                            ModifiersChecker.Has_async(funcAdapter.Modifiers),
+                            _semaModel))
             {
                 retTySpec = null;
             }
@@ -52,7 +53,7 @@ namespace SharpSyntaxRewriter.Rewriters
             return WrapInBlock(funcAdapter.ExpressionBody, retTySpec != null);
         }
 
-        private static SyntaxNode VisitBaseMethodDeclaration<MethodDeclarationT>(
+        private SyntaxNode VisitBaseMethodDeclaration<MethodDeclarationT>(
                 MethodDeclarationT node,
                 Func<MethodDeclarationT, SyntaxNode> visit,
                 TypeSyntax retTySpec)
@@ -163,7 +164,7 @@ namespace SharpSyntaxRewriter.Rewriters
                 node_P.ExpressionBody,
                 !ReturnTypeInfo.ImpliesVoid(methSym.ReturnType, methSym.IsAsync));
 
-            var blockNodeP = blockNode
+            var blockNode_P = blockNode
                 .WithOpenBraceToken(blockNode.OpenBraceToken
                     .WithLeadingTrivia(
                         node_P.ExpressionBody.GetLeadingTrivia().AddRange(
@@ -174,7 +175,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             return node_P
                 .RemoveNode(node_P.ExpressionBody, SyntaxRemoveOptions.KeepNoTrivia)
-                .WithBody(blockNodeP);
+                .WithBody(blockNode_P);
         }
 
         public override SyntaxNode VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax node)
