@@ -267,7 +267,7 @@ namespace SharpSyntaxRewriter.Rewriters
             if (decomp)
             {
                 var stmt = DecomposeIntoStatement(__ctx.Pop(), node_P.Expression);
-                return stmt.WithTrailingTrivia(node.GetTrailingTrivia());
+                return stmt.WithTriviaFrom(node);
             }
 
             return node_P;
