@@ -10,6 +10,7 @@ using System.Linq;
 using System.Diagnostics;
 
 using SharpSyntaxRewriter.Rewriters.Types;
+using SharpSyntaxRewriter.Rewriters.Helpers;
 
 namespace SharpSyntaxRewriter.Rewriters
 {
@@ -119,12 +120,14 @@ namespace SharpSyntaxRewriter.Rewriters
                         SyntaxKind.NotEqualsExpression,
                         node_P.Left.WithoutTrivia(), // The left node without a possible `Value' suffix.
                         UnambiguousComparisonRHS(lhsNode, lhsTySym, lhsTySym_P))
-                .WithTriviaFrom(node.Left);
+                .WithLeadingTrivia(node.Left.GetLeadingTrivia())
+                .WithTrailingTrivia(
+                    node.Left.GetTrailingTrivia().AddRange(
+                        node.OperatorToken.GetAllTrivia()));
 
             return SyntaxFactory.ConditionalExpression(
                         compExpr,
-                        lhsNode.WithLeadingTrivia(node.OperatorToken.LeadingTrivia)
-                               .WithTrailingTrivia(node.OperatorToken.TrailingTrivia),
+                        (ExpressionSyntax)RemoveEveryTrivia__.Go(lhsNode),
                         rhsNode.WithTriviaFrom(node.Right));
         }
 
