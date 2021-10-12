@@ -732,5 +732,39 @@ public struct Person
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyUseBetweenTrivial()
+        {
+            var original = @"
+using System;
+
+public class SmtpUri {
+    public SmtpUri(Uri uri) {
+
+        Host = uri.Host;
+
+    }
+
+    public string Host { get; }
+}
+";
+
+            var expected = @"
+using System;
+
+public class SmtpUri {
+    public SmtpUri(Uri uri) {
+
+        ____LT____Host____GT____k_BackingField = uri.Host;
+
+    }
+
+    public string Host { get { return ____LT____Host____GT____k_BackingField; } } public string____LT____Host____GT____k_BackingField;
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }

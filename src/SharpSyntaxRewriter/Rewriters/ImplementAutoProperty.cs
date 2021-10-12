@@ -268,9 +268,11 @@ namespace SharpSyntaxRewriter.Rewriters
                     && propSym.IsReadOnly
                     && propSym.DeclaringSyntaxReferences.Any())
             {
-                return node_P.WithLeft(
-                    SyntaxFactory.IdentifierName(
-                        SynthesizedFieldName(propSym.Name)));
+                return
+                    node_P.WithLeft(
+                        SyntaxFactory.IdentifierName(
+                            SynthesizedFieldName(propSym.Name))
+                        .WithTriviaFrom(node.Left));
             }
 
             return node_P;

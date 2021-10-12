@@ -80,6 +80,8 @@ namespace Tests
                         MetadataReference.CreateFromFile(Assembly.Load(
                             new AssemblyName("System.ObjectModel")).Location),
                         MetadataReference.CreateFromFile(Assembly.Load(
+                            new AssemblyName("System.Private.Uri")).Location),
+                        MetadataReference.CreateFromFile(Assembly.Load(
                             new AssemblyName("System.Private.Xml")).Location),
                         MetadataReference.CreateFromFile(Assembly.Load(
                             new AssemblyName("System.Private.Xml.Linq")).Location),
