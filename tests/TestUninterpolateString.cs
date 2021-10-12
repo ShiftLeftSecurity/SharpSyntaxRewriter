@@ -281,5 +281,39 @@ class CCC
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestUninterpolateStringFirstOperandTernaryCondition()
+        {
+            var original = @"
+using System;
+
+public class CCC
+{
+    private string EncodeParameter(int parameter)
+    {
+        return parameter == 4
+                ? $""param is { parameter }""
+                : ""a"";
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+public class CCC
+{
+    private string EncodeParameter(int parameter)
+    {
+        return parameter == 4
+                ? string.Format(""param is { 0 }"",parameter)
+                : ""a"";
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
