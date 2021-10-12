@@ -33,6 +33,12 @@ namespace SharpSyntaxRewriter.Rewriters
                             ? SyntaxFactory.ReturnStatement(expr.WithoutTrivia())
                             : SyntaxFactory.ExpressionStatement(expr.WithoutTrivia()));
 
+            blockNode = blockNode
+                .WithOpenBraceToken(
+                    blockNode.OpenBraceToken.WithLeadingTrivia(expr.GetLeadingTrivia()))
+                .WithCloseBraceToken(
+                    blockNode.CloseBraceToken.WithTrailingTrivia(expr.GetTrailingTrivia()));
+
             return blockNode;
         }
 
@@ -164,18 +170,9 @@ namespace SharpSyntaxRewriter.Rewriters
                 node_P.ExpressionBody,
                 !ReturnTypeInfo.ImpliesVoid(methSym.ReturnType, methSym.IsAsync));
 
-            var blockNode_P = blockNode
-                .WithOpenBraceToken(blockNode.OpenBraceToken
-                    .WithLeadingTrivia(
-                        node_P.ExpressionBody.GetLeadingTrivia().AddRange(
-                            node_P.ExpressionBody.GetTrailingTrivia())))
-                .WithCloseBraceToken(blockNode.CloseBraceToken
-                    .WithTrailingTrivia(
-                        node_P.ExpressionBody.GetTrailingTrivia()));
-
             return node_P
                 .RemoveNode(node_P.ExpressionBody, SyntaxRemoveOptions.KeepNoTrivia)
-                .WithBody(blockNode_P);
+                .WithBody(blockNode);
         }
 
         public override SyntaxNode VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax node)

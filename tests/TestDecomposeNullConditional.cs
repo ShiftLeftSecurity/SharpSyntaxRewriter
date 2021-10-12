@@ -103,6 +103,68 @@ class C
         }
 
         [TestMethod]
+        public void TestDecomposeNullConditionalNullableInvocationPostLineBreak()
+        {
+            var original = @"
+class C
+{
+    void f()
+    {
+        var c = new C();
+
+        c?.f();
+    }
+}
+";
+
+            var expected = @"
+class C
+{
+    void f()
+    {
+        var c = new C();
+
+        if ((object)c != null) c.f();
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestDecomposeNullConditionalNullableInvocationPreAndPostLineBreak()
+        {
+            var original = @"
+class C
+{
+    void f()
+    {
+        var c = new C();
+
+        c?.f();
+
+    }
+}
+";
+
+            var expected = @"
+class C
+{
+    void f()
+    {
+        var c = new C();
+
+        if ((object)c != null) c.f();
+
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
         public void TestDecomposeNullConditionalMemberAccessNonNullable()
         {
             var original = @"

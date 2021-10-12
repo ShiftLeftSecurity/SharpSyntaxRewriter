@@ -89,20 +89,25 @@ namespace SharpSyntaxRewriter.Rewriters
             interpolations.ForEach(
                 i => fmtArgs = fmtArgs.Add(SyntaxFactory.Argument(i)));
 
+            InvocationExpressionSyntax callExpr;
+
             var convTySym = _semaModel.GetTypeInfo(node).ConvertedType;
             var conv = _semaModel.ClassifyConversion(node, convTySym);
             if (conv.IsIdentity)
-                return Invocation(ResultTypeName.String, fmtArgs);
+                callExpr = Invocation(ResultTypeName.String, fmtArgs);
+            else if (conv.IsInterpolatedString)
+                callExpr = Invocation(ResultTypeName.FormattableString, fmtArgs);
+            else
+            {
+                // There must exist a user-defined conversion.
+                var tySym = _semaModel.GetTypeInfo(node).Type;
+                if (tySym.SpecialType == SpecialType.System_String)
+                    callExpr = Invocation(ResultTypeName.String, fmtArgs);
+                else
+                    callExpr = Invocation(ResultTypeName.FormattableString, fmtArgs);
+            }
 
-            if (conv.IsInterpolatedString)
-                return Invocation(ResultTypeName.FormattableString, fmtArgs);
-
-            // There must exist a user-defined conversion.
-            var tySym = _semaModel.GetTypeInfo(node).Type;
-            if (tySym.SpecialType == SpecialType.System_String)
-                return Invocation(ResultTypeName.String, fmtArgs);
-
-            return Invocation(ResultTypeName.FormattableString, fmtArgs);
+            return callExpr.WithTriviaFrom(node);
         }
 
         public override SyntaxNode VisitInterpolation(InterpolationSyntax node)

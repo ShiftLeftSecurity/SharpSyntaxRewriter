@@ -428,8 +428,8 @@ class NullCoalesce
     static void Main()
     {
         int? x = null;
-        int y = x!=null ? x.Value
-             : -1;
+        int y = x!=null
+                    ? x.Value : -1;
     }
 }
 }
@@ -465,6 +465,57 @@ class NullCoalesce
             ? x.Value : -1;
     }
 }
+}
+";
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestUncoalesceCoalescedNull9()
+        {
+            var original = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class DDD
+{
+    public string Name;
+}
+
+public class CCC
+{
+    void fff()
+    {
+        IEnumerable<DDD> lll = null;
+        var eee = lll
+                    .FirstOrDefault(d => d.Name == ""a"") ??
+                  lll
+                     .FirstOrDefault(d => d.Name == ""b"");
+    }
+}
+";
+
+            var expected = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class DDD
+{
+    public string Name;
+}
+
+public class CCC
+{
+    void fff()
+    {
+        IEnumerable<DDD> lll = null;
+        var eee = lll
+                    .FirstOrDefault(d => d.Name == ""a"") != null
+                        ? lll.FirstOrDefault(d => d.Name == ""a"") : lll
+                    .FirstOrDefault(d => d.Name == ""b"");
+    }
 }
 ";
             TestRewrite_LinePreserve(original, expected);

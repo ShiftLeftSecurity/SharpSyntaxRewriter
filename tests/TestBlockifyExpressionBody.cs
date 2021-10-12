@@ -513,5 +513,89 @@ class CCC
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestBlockifyExpressionBodyLambdaWithTrailingTrivia()
+        {
+            var original = @"
+using System;
+
+public class CCC
+{
+    public void f()
+    {
+        h(p => p.k()
+         );
+    }
+
+    public int k() { return 1; }
+
+    public void h(Func<CCC, int> l) {}
+}
+";
+
+            var expected = @"
+using System;
+
+public class CCC
+{
+    public void f()
+    {
+        h(p => {return p.k();}
+         );
+    }
+
+    public int k() { return 1; }
+
+    public void h(Func<CCC, int> l) {}
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestBlockifyExpressionBodyLambdaWithLeadingAndTrailingTrivia()
+        {
+            var original = @"
+using System;
+
+public class CCC
+{
+    public void f()
+    {
+        h(p =>
+
+            p.k()
+         );
+    }
+
+    public int k() { return 1; }
+
+    public void h(Func<CCC, int> l) {}
+}
+";
+
+            var expected = @"
+using System;
+
+public class CCC
+{
+    public void f()
+    {
+        h(p =>
+
+            {return p.k();}
+         );
+    }
+
+    public int k() { return 1; }
+
+    public void h(Func<CCC, int> l) {}
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
