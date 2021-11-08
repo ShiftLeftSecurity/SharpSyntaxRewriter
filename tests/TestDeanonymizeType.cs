@@ -1208,5 +1208,43 @@ public class Foo
 
             TestRewrite_LineIgnore(original, expected);
         }
+
+        [TestMethod]
+        public void TestDeanonymizeTypeWithIndexerProperty()
+        {
+            var original = @"
+class A
+{
+    int this[int index]
+    {
+        get { return 1; }
+    }
+
+    void f()
+    {
+        var x = new A();
+        var y = new { x };
+    }
+}
+";
+
+            var expected = @"
+classA
+{   internal class __AnonymousType1_A{internal A x; internal __AnonymousType1_A(A x){this.x=x;}}
+    int this[intindex]
+    {
+        get{ return 1; }
+    }
+
+    void f()
+    {
+        var x = new A();
+        var y = new __AnonymousType1_A(x);
+    }
+}
+";
+            TestRewrite_LinePreserve(original, expected);
+        }
+
     }
 }

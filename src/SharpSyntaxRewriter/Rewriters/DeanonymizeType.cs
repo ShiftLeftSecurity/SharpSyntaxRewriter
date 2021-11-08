@@ -294,6 +294,9 @@ namespace SharpSyntaxRewriter.Rewriters
                 switch (sym)
                 {
                     case IPropertySymbol propSym:
+                        if (string.IsNullOrEmpty(propSym.Name))
+                            break;
+
                         var membTySpec =
                             RecognizePropertyOfAnonymousType(propSym.Type, spanPos);
                         tyParmNames.AddRange(
