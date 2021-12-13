@@ -13,9 +13,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class UninterpolateString : SymbolicRewriter
     {
+        public const string ID = "<uninterpolate string>";
+
         public override string Name()
         {
-            return "<uninterpolate string>";
+            return ID;
         }
 
         private readonly Stack<List<ExpressionSyntax>> __ctx = new();

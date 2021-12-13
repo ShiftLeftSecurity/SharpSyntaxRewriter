@@ -15,9 +15,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class EnsureVisibleConstructor : Rewriter
     {
+        public const string ID = "<ensure visible constructor>";
+
         public override string Name()
         {
-            return "<ensure visible constructor>";
+            return ID;
         }
 
         /*

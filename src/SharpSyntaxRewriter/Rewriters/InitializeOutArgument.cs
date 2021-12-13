@@ -14,9 +14,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class InitializeOutArgument : StatementSynthesizerRewriter
     {
+        public const string ID = "<initialize `out' argument>";
+
         public override string Name()
         {
-            return "<initialize `out' argument>";
+            return ID;
         }
 
         public override SyntaxNode VisitArgument(ArgumentSyntax node)

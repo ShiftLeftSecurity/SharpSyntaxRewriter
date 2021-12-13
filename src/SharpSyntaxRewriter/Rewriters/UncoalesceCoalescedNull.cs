@@ -16,9 +16,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class UncoalesceCoalescedNull : SymbolicRewriter
     {
+        public const string ID = "<uncoalesce coalesced `null'>";
+
         public override string Name()
         {
-            return "<uncoalesce coalesced `null'>";
+            return ID;
         }
 
         [Conditional("DEBUG_REWRITE")]

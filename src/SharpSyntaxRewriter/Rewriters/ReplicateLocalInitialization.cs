@@ -18,9 +18,11 @@ namespace SharpSyntaxRewriter.Rewriters
     // TODO: Inherit from `StatementSynthesizerRewriter'.
     public class ReplicateLocalInitialization : SymbolicRewriter
     {
+        public const string ID = "<replicate local initialization>";
+
         public override string Name()
         {
-            return "<replicate local initialization>";
+            return ID;
         }
 
         private readonly Stack<List<StatementSyntax>> __ctx = new();

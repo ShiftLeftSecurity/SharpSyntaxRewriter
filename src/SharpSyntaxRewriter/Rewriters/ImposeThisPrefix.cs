@@ -14,9 +14,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class ImposeThisPrefix : SymbolicRewriter
     {
+        public const string ID = "<impose `this' prefix>";
+
         public override string Name()
         {
-            return "<impose `this' prefix>";
+            return ID;
         }
 
         public override SyntaxNode VisitNameColon(NameColonSyntax node)

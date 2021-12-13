@@ -13,9 +13,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class EmplaceGlobalStatement : Rewriter
     {
+        public const string ID = "<emplace global statement>";
+
         public override string Name()
         {
-            return "<emplace global statement>";
+            return ID;
         }
 
         private readonly List<StatementSyntax> __stmtsNodes = new();

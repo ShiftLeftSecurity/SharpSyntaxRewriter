@@ -15,9 +15,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class StoreObjectCreation : StatementSynthesizerRewriter
     {
+        public const string ID = "<store object creation>";
+
         public override string Name()
         {
-            return "<store object creation>";
+            return ID;
         }
 
         private SyntaxNode VisitCreationExpression<ExpressionT>(
