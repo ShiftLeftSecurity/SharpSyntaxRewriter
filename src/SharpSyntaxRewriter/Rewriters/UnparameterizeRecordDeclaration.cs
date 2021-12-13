@@ -4,7 +4,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
 
 using SharpSyntaxRewriter.Rewriters.Types;
 using SharpSyntaxRewriter.Utilities;
@@ -13,9 +12,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class UnparameterizeRecordDeclaration : Rewriter
     {
+        public const string ID = "<unparameterize record declaration>";
+
         public override string Name()
         {
-            return "<unparameterize record declaration>";
+            return ID;
         }
 
         public override SyntaxNode VisitRecordDeclaration(RecordDeclarationSyntax node)

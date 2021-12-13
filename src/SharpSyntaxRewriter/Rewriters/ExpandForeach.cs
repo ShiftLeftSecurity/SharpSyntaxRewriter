@@ -13,9 +13,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class ExpandForeach : SymbolicRewriter
     {
+        public const string ID = "<expand `foreach'>";
+
         public override string Name()
         {
-            return "<expand `foreach'>";
+            return ID;
         }
 
         public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)

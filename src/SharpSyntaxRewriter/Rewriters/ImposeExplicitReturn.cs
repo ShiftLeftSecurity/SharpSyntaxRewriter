@@ -14,9 +14,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class ImposeExplicitReturn : SymbolicRewriter
     {
+        public const string ID = "<impose explicit `return'>";
+
         public override string Name()
         {
-            return "<impose explicit `return'>";
+            return ID;
         }
 
         private bool IsMissingReturn(IFunctionSyntaxAdapter funcAdapter,

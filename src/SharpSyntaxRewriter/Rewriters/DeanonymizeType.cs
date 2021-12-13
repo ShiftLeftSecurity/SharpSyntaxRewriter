@@ -17,9 +17,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class DeanonymizeType : SymbolicRewriter
     {
+        public const string ID = "<deanonymize type>";
+
         public override string Name()
         {
-            return "<deanonymize type>";
+            return ID;
         }
 
         private static readonly ConcurrentDictionary<string, int> __deanonIDs = new();

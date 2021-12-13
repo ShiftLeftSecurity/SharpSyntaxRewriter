@@ -17,9 +17,11 @@ namespace SharpSyntaxRewriter.Rewriters
     // WIP
     public class TranslateLinq : Rewriter
     {
+        public const string ID = "<translante LINQ>";
+
         public override string Name()
         {
-            return "<translante LINQ>";
+            return ID;
         }
 
         public override SyntaxTree Apply(SyntaxTree tree)

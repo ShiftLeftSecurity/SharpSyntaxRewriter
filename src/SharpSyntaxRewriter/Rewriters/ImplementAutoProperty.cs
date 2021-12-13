@@ -16,9 +16,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class ImplementAutoProperty : SymbolicRewriter
     {
+        public const string ID = "<implement auto-property>";
+
         public override string Name()
         {
-            return "<implement auto-property>";
+            return ID;
         }
 
         private class __BackingFieldInfo

@@ -15,9 +15,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class BlockifyExpressionBody : SymbolicRewriter
     {
+        public const string ID = "<blockify expression body>";
+
         public override string Name()
         {
-            return "<blockify expression body>";
+            return ID;
         }
 
         private static BlockSyntax WrapInBlock(ExpressionSyntax expr,

@@ -17,9 +17,11 @@ namespace SharpSyntaxRewriter.Rewriters
 {
     public class DecomposeNullConditional : SymbolicRewriter
     {
+        public const string ID = "<decompose `null' conditional>";
+
         public override string Name()
         {
-            return "<decompose `null' conditional>";
+            return ID;
         }
 
         private ExpressionSyntax JoinExpressions(ExpressionSyntax prefixExpr,
