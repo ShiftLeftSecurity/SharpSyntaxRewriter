@@ -94,7 +94,7 @@ namespace SharpSyntaxRewriter.Rewriters
                                         .WithTrailingTrivia(membDecl.GetTrailingTrivia()));
 
                     // Remove the property from the table because, in the presence
-                    // of interface- overriden ones, we'll see the property twice.
+                    // of interface-overriden ones, we'll see the property twice.
                     _ = fldTbl.Remove(propName);
                 }
                 else
@@ -160,13 +160,13 @@ namespace SharpSyntaxRewriter.Rewriters
             if (ModifiersChecker.Has_abstract(node.Modifiers))
                 return node;
 
-            // Auto properties don't have expression body.
+            // Auto properties don't have an expression body.
             if (node.ExpressionBody != null)
                 return node;
 
             Debug.Assert(node.AccessorList != null);
 
-            // Accessors of an auto property doen't have expression body.
+            // An accessor of an auto property doesn't have an expression body.
             foreach (var access in node.AccessorList.Accessors)
             {
                 if (access.Body != null || access.ExpressionBody != null)
@@ -179,13 +179,15 @@ namespace SharpSyntaxRewriter.Rewriters
 
             if (node.Initializer != null)
             {
+                Debug.Assert(node.Parent is not StructDeclarationSyntax);
+
                 fldInfo.EqualsValInit = node.Initializer;
                 node = node.RemoveNode(node.Initializer,
                                        SyntaxRemoveOptions.KeepEndOfLine)
                            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
                            .WithTrailingTrivia(node.SemicolonToken.TrailingTrivia);
             }
-            else if (node.Parent is StructDeclarationSyntax)
+            else if (node.Parent is StructDeclarationSyntax structDecl)
             {
                 Debug.Assert(__struct.Any());
 
@@ -196,6 +198,14 @@ namespace SharpSyntaxRewriter.Rewriters
                             SyntaxFactory.IdentifierName(fldName),
                             SyntaxFactory.DefaultExpression(node.Type)));
                 __struct.Peek().Add(initExpr);
+
+                if (ModifiersChecker.Has_readonly(structDecl.Modifiers)
+                        && !ModifiersChecker.Has_readonly(fldInfo.Modifiers))
+                {
+                    fldInfo.Modifiers =
+                        fldInfo.Modifiers.Add(
+                            SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword));
+                }
             }
 
             var acsorDecls = SyntaxFactory.AccessorList();

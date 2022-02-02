@@ -740,10 +740,9 @@ public struct Person
 using System;
 
 public class SmtpUri {
-    public SmtpUri(Uri uri) {
-
+    public SmtpUri(Uri uri)
+    {
         Host = uri.Host;
-
     }
 
     public string Host { get; }
@@ -754,13 +753,72 @@ public class SmtpUri {
 using System;
 
 public class SmtpUri {
-    public SmtpUri(Uri uri) {
-
+    public SmtpUri(Uri uri)
+    {
         ____LT____Host____GT____k_BackingField = uri.Host;
-
     }
 
     public string Host { get { return ____LT____Host____GT____k_BackingField; } } public string____LT____Host____GT____k_BackingField;
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyReadonlyStruct()
+        {
+            var original = @"
+public readonly struct ImageDimensions
+{
+    public int Height { get; }
+}
+";
+
+            var expected = @"
+public readonly struct ImageDimensions
+{
+    public int Height { get { return ____LT____Height____GT____k_BackingField; } } public readonly int ____LT____Height____GT____k_BackingField;
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyReadonlyStructWithReadonlyPropertyGetAccessor()
+        {
+            var original = @"
+public readonly struct ImageDimensions
+{
+    public readonly int Height { get; }
+}
+";
+
+            var expected = @"
+public readonly struct ImageDimensions
+{
+    public readonly int Height { get { return ____LT____Height____GT____k_BackingField; } } public readonly int ____LT____Height____GT____k_BackingField;
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyReadonlyStructWithReadonlyPropertyGetAndInitAccessors()
+        {
+            var original = @"
+public readonly struct ImageDimensions
+{
+    public readonly int Height { get; init; }
+}
+";
+
+            var expected = @"
+public readonly struct ImageDimensions
+{
+    public readonly int Height { get { return ____LT____Height____GT____k_BackingField; } init{____LT____Height____GT____k_BackingField=value;} } public readonly int ____LT____Height____GT____k_BackingField;
 }
 ";
 
