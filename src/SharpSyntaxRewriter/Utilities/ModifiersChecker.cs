@@ -33,5 +33,10 @@ namespace SharpSyntaxRewriter.Utilities
         {
             return HasByKind(modifiers, SyntaxKind.AbstractKeyword);
         }
+
+        public static bool Has_readonly(SyntaxTokenList modifiers)
+        {
+            return HasByKind(modifiers, SyntaxKind.ReadOnlyKeyword);
+        }
     }
 }
