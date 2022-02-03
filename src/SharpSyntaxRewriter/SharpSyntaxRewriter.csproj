@@ -8,8 +8,11 @@
     <Copyright>ShiftLeft Inc.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Owners>ShiftLeft Inc. (https://shiftleft.io/)</Owners>
-    <Title>(C) Sharp Syntax Rewriter</Title>
+    <Title>The (C) Sharp Syntax Rewriter Tool</Title>
     <Description>The Roslyn-based (C) Sharp Syntax Rewriter Tool</Description>
+    <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/ShiftLeftSecurity/SharpSyntaxRewriter</PackageProjectUrl>
+    <Summary>A Roslyn-based tool for C# syntax rewriting with the purpose of source-code desugaring.</Summary>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
