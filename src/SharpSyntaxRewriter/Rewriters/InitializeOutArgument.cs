@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharpSyntaxRewriter.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -97,6 +98,15 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node;
 
             return base.VisitParenthesizedLambdaExpression(node);
+        }
+
+        public override SyntaxNode VisitForEachVariableStatement(ForEachVariableStatementSyntax node)
+        {
+            var expr_P = (ExpressionSyntax)node.Expression.Accept(this);
+            var stmt_P = (StatementSyntax)node.Statement.Accept(this);
+
+            return node.WithExpression(expr_P)
+                       .WithStatement(stmt_P);
         }
 
         public override SyntaxNode VisitQueryExpression(QueryExpressionSyntax node)
