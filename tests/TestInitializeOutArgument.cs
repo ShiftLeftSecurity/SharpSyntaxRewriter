@@ -632,5 +632,69 @@ public class Abc
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestInitializeOutArgumentDontAffectForeachVariable()
+        {
+            var original = @"
+using System.Collections.Generic;
+
+public class Ccc
+{
+    public void fff()
+    {
+        List<int> l = null;
+        foreach (var i in l) {}
+    }
+}
+";
+
+            var expected = @"
+using System.Collections.Generic;
+
+public class Ccc
+{
+    public void fff()
+    {
+        List<int> l = null;
+        foreach (var i in l) {}
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestInitializeOutArgumentDontAffectForeachAggregateVariable()
+        {
+            var original = @"
+using System.Collections.Generic;
+
+public class Ccc
+{
+    public void fff()
+    {
+        List<(int, double)> l = null;
+        foreach ((var i, var d) in l) {}
+    }
+}
+";
+
+            var expected = @"
+using System.Collections.Generic;
+
+public class Ccc
+{
+    public void fff()
+    {
+        List<(int, double)> l = null;
+        foreach ((var i, var d) in l) {}
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
