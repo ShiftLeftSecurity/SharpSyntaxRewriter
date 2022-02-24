@@ -830,43 +830,5 @@ class Test
 
             TestRewrite_LinePreserve(original, expected);
         }
-
-        [TestMethod]
-        public void TestDecomposeNullConditionalWithOutVarInCallPrefix()
-        {
-            var original = @"
-public class Ccc
-{
-    public Ccc ggg(out int ppp) { ppp = 111; return null; }
-
-    public Ccc kkk() { return null; }
-
-    public void fff()
-    {
-        Ccc ooo = null;
-
-        ooo.ggg(out int qqq)?.kkk();
-    }
-}
-";
-
-            var expected = @"
-public class Ccc
-{
-    public Ccc ggg(out int ppp) { ppp = 111; return null; }
-
-    public Ccc kkk() { return null; }
-
-    public void fff()
-    {
-        Ccc ooo = null;
-
-        if ((object)ooo.ggg(out int qqq)!=null) ooo.ggg(out int qqq).kkk();
-    }
-}
-";
-
-            TestRewrite_LinePreserve(original, expected);
-        }
     }
 }
