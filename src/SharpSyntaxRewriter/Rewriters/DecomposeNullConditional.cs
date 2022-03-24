@@ -217,7 +217,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 falseExpr =
                     SyntaxFactory.CastExpression(
                         SyntaxFactory.NullableType(
-                            SyntaxFactory.ParseTypeName(exprTySym.ToString())),
+                            SyntaxFactory.ParseTypeName(
+                                exprTySym.ToMinimalDisplayString(_semaModel, node.SpanStart))),
                         falseExpr);
             }
 

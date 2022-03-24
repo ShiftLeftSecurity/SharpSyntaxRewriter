@@ -446,6 +446,59 @@ class Test
         }
 
         [TestMethod]
+        public void TestDecomposeNullConditionalUnderPotentiallyAmbiguousNamespaceName()
+        {
+            // We can't qualify `DateTime` as `System.DateTime` because
+            // the lookup would find `MediaBrowser.Common.System`,
+            // which doesn't have a `DateTime` type.
+
+            var original = @"
+using System;
+
+namespace MediaBrowser.Common.System
+{
+}
+
+namespace MediaBrowser.Common.Net
+{
+    public class C
+    {
+        private DateTime? _lastResolved = null;
+
+        public void f()
+        {
+            if (DateTime.UtcNow > _lastResolved?.AddMinutes(2))
+                ;
+        }
+    }
+}
+";
+            var expected = @"
+using System;
+
+namespace MediaBrowser.Common.System
+{
+}
+
+namespace MediaBrowser.Common.Net
+{
+    public class C
+    {
+        private DateTime? _lastResolved = null;
+
+        public void f()
+        {
+            if (DateTime.UtcNow > ((object)_lastResolved.Value == null) ? (DateTime?)null :_lastResolved.Value.AddMinutes(2))
+                ;
+        }
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
         public void TestDecomposeNullConditionalIndirectNestingInFunctionArgument()
         {
             var original = @"
@@ -583,7 +636,7 @@ public class TTT
     public DateTime? TrialEnd { get; set; }
     private void f()
     {
-        var x = ((object)this.TrialEnd.Value==null)?(System.DateTime?)null:this.TrialEnd.Value.AddHours(12);
+        var x = ((object)this.TrialEnd.Value==null)?(DateTime?)null:this.TrialEnd.Value.AddHours(12);
     }
 }
 ";
