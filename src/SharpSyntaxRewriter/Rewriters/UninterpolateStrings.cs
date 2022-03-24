@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -95,10 +96,22 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var convTySym = _semaModel.GetTypeInfo(node).ConvertedType;
             var conv = _semaModel.ClassifyConversion(node, convTySym);
-            if (conv.IsIdentity)
+
+            if (!conv.Exists)
+            {
+                if (convTySym.SpecialType == SpecialType.System_String)
+                    callExpr = Invocation(ResultTypeName.String, fmtArgs);
+                else
+                    callExpr = Invocation(ResultTypeName.FormattableString, fmtArgs);
+            }
+            else if (conv.IsIdentity)
+            {
                 callExpr = Invocation(ResultTypeName.String, fmtArgs);
+            }
             else if (conv.IsInterpolatedString)
+            {
                 callExpr = Invocation(ResultTypeName.FormattableString, fmtArgs);
+            }
             else
             {
                 // There must exist a user-defined conversion.
