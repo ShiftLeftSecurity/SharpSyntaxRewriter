@@ -9,6 +9,7 @@ using System.Linq;
 
 using SharpSyntaxRewriter.Constants;
 using SharpSyntaxRewriter.Rewriters.Types;
+using SharpSyntaxRewriter.Utilities;
 
 namespace SharpSyntaxRewriter.Rewriters
 {
@@ -26,9 +27,51 @@ namespace SharpSyntaxRewriter.Rewriters
             return node;
         }
 
+        private SyntaxNode VisitBaseMethodDeclaration<MethodDeclarationT>(
+                MethodDeclarationT node,
+                Func<MethodDeclarationT, SyntaxNode> visit,
+                TypeSyntax retTySpec)
+            where MethodDeclarationT : BaseMethodDeclarationSyntax
+        {
+            if (ModifiersChecker.Has_static(node.Modifiers))
+                return node;
+
+            var node_P = (MethodDeclarationT)visit(node);
+            return node_P;
+        }
+
+        public override SyntaxNode VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            if (ModifiersChecker.Has_static(node.Modifiers))
+                return node;
+
+            return base.VisitMethodDeclaration(node);
+        }
+
         public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
             return node.WithBody((BlockSyntax)node.Body.Accept(this));
+        }
+
+        public override SyntaxNode VisitDestructorDeclaration(DestructorDeclarationSyntax node)
+        {
+            return VisitBaseMethodDeclaration(node,
+                                              base.VisitDestructorDeclaration,
+                                              null);
+        }
+
+        public override SyntaxNode VisitOperatorDeclaration(OperatorDeclarationSyntax node)
+        {
+            return VisitBaseMethodDeclaration(node,
+                                              base.VisitOperatorDeclaration,
+                                              node.ReturnType);
+        }
+
+        public override SyntaxNode VisitConversionOperatorDeclaration(ConversionOperatorDeclarationSyntax node)
+        {
+            return VisitBaseMethodDeclaration(node,
+                                              base.VisitConversionOperatorDeclaration,
+                                              node.Type);
         }
 
         public override SyntaxNode VisitVariableDeclarator(VariableDeclaratorSyntax node)
