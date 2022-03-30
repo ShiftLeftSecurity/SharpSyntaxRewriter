@@ -954,5 +954,45 @@ class C
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImposeThisPrefixEqualNameOfTypeAndProperty()
+        {
+            var original = @"
+public abstract class BaseItem
+{
+    public int Audio { get; set; }
+}
+
+public class Audio {}
+
+public class T : BaseItem
+{
+    public static void f()
+    {
+        var s = nameof(Audio);
+    }
+}
+";
+
+            var expected = @"
+public abstract class BaseItem
+{
+    public int Audio { get; set; }
+}
+
+public class Audio {}
+
+public class T : BaseItem
+{
+    public static void f()
+    {
+        var s = nameof(Audio);
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
