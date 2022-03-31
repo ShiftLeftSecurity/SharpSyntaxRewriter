@@ -22,7 +22,35 @@ public record Person(string FirstName);
 ";
 
             var expected = @"
-public record Person { public Person(string FirstName) {} public string FirstName { get; init;} }
+public record Person { public string FirstName { get; init; } public Person(string FirstName) {this.FirstName=FirstName;} }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestUnparameterizeRecordStructDeclarationWithParameterNoBody()
+        {
+            var original = @"
+public record struct C (int X, string S);
+";
+
+            var expected = @"
+public record struct C { public int X {get;init;} public string S {get;init;} public C(in tX,string S){this.X=X;this.S=S;}}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestUnparameterizeRecordStructDeclarationWithParameterNoBodyReadonly()
+        {
+            var original = @"
+public readonly record struct Point(double X, double Y, double Z);
+";
+
+            var expected = @"
+public record struct Point { public double X {get;init;} public double Y{get;init;} public double Z {get;init;} public Point(double X,double Y,double Z){this.X=X;this.Y=Y;this.Z=Z;}}
 ";
 
             TestRewrite_LinePreserve(original, expected);
@@ -36,7 +64,7 @@ public record Person(string FirstName) {}
 ";
 
             var expected = @"
-public record Person { public Person(string FirstName) {} public string FirstName { get; init; } }
+public record Person { public string FirstName { get; init; } public Person(string FirstName) {this.FirstName=FirstName;} }
 ";
 
             TestRewrite_LinePreserve(original, expected);
@@ -54,7 +82,7 @@ public record Person(string FirstName)
             var expected = @"
 public record Person
 {
-    public Person(string FirstName) {} public string FirstName { get; init;} }
+    public string FirstName { get; init;} public Person(string FirstName) {this.FirstName=FirstName;} }
 ";
 
             TestRewrite_LinePreserve(original, expected);
@@ -73,7 +101,27 @@ public record Person(string FirstName)
             var expected = @"
 public record Person
 {
-    public string[] PhoneNumbers { get; init; } public Person(string FirstName){} public string FirstName { get; init;}
+    public string FirstName { get; init;} public Person(string FirstName){this.FirstName=FirstName;}public string[] PhoneNumbers { get; init; } 
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestUnparameterizeRecordStructDeclarationWithParameterBodyWithExistingMember()
+        {
+            var original = @"
+public record struct Person(string FirstName)
+{
+    public string[] PhoneNumbers { get; init; } = default;
+}
+";
+
+            var expected = @"
+public record struct Person
+{
+    public string FirstName { get; init;} public Person(string FirstName){this.FirstName=FirstName;}public string[] PhoneNumbers { get; init; } = default;
 }
 ";
 
@@ -126,7 +174,7 @@ public record Teacher(string FirstName, int Grade) : Person(FirstName);
 
             var expected = @"
 public abstract record Person(string FirstName);
-public record Teacher : Person { public Teacher (string FirstName, int Grade) : base(FirstName) {} public string FirstName { get; init;} public int Grade { get; init;} }
+public record Teacher : Person { public string FirstName { get; init;} public int Grade { get; init;} public Teacher (string FirstName, int Grade) : base(FirstName) {this.FirstName=FirstName;this.Grade=Grade;} }
 ";
 
             TestRewrite_LinePreserve(original, expected);
@@ -142,7 +190,7 @@ public record Teacher(string FirstName) : Person();
 
             var expected = @"
 public abstract record Person();
-public record Teacher : Person { public Teacher (string FirstName) : base() {} public string FirstName { get; init;} }
+public record Teacher : Person {  public string FirstName { get; init;} public Teacher (string FirstName) : base() {this.FirstName=FirstName;}}
 ";
 
             TestRewrite_LinePreserve(original, expected);
@@ -160,7 +208,7 @@ public record Teacher(string FirstName)
             var expected = @"
 public abstract record Person();
 public record Teacher
-    : Person { public Teacher (string FirstName) : base() {} public string FirstName { get; init;} }
+    : Person { public string FirstName { get; init;}  public Teacher (string FirstName) : base() {this.FirstName=FirstName;} }
 ";
 
             TestRewrite_LinePreserve(original, expected);
