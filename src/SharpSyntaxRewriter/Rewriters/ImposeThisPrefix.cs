@@ -27,10 +27,14 @@ namespace SharpSyntaxRewriter.Rewriters
             return node;
         }
 
+        public override SyntaxNode VisitAttributeList(AttributeListSyntax node)
+        {
+            return node;
+        }
+
         private SyntaxNode VisitBaseMethodDeclaration<MethodDeclarationT>(
                 MethodDeclarationT node,
-                Func<MethodDeclarationT, SyntaxNode> visit,
-                TypeSyntax retTySpec)
+                Func<MethodDeclarationT, SyntaxNode> visit)
             where MethodDeclarationT : BaseMethodDeclarationSyntax
         {
             if (ModifiersChecker.Has_static(node.Modifiers))
@@ -56,22 +60,19 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitDestructorDeclaration(DestructorDeclarationSyntax node)
         {
             return VisitBaseMethodDeclaration(node,
-                                              base.VisitDestructorDeclaration,
-                                              null);
+                                              base.VisitDestructorDeclaration);
         }
 
         public override SyntaxNode VisitOperatorDeclaration(OperatorDeclarationSyntax node)
         {
             return VisitBaseMethodDeclaration(node,
-                                              base.VisitOperatorDeclaration,
-                                              node.ReturnType);
+                                              base.VisitOperatorDeclaration);
         }
 
         public override SyntaxNode VisitConversionOperatorDeclaration(ConversionOperatorDeclarationSyntax node)
         {
             return VisitBaseMethodDeclaration(node,
-                                              base.VisitConversionOperatorDeclaration,
-                                              node.Type);
+                                              base.VisitConversionOperatorDeclaration);
         }
 
         public override SyntaxNode VisitVariableDeclarator(VariableDeclaratorSyntax node)
