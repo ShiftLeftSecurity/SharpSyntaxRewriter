@@ -4,6 +4,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Linq;
 
 using SharpSyntaxRewriter.Rewriters.Types;
 using SharpSyntaxRewriter.Utilities;
@@ -28,51 +30,58 @@ namespace SharpSyntaxRewriter.Rewriters
                     || !node.ParameterList.Parameters.Any())
                 return node;
 
-            var node_P = node.WithParameterList(null)
-                             .WithSemicolonToken(
-                                 SyntaxFactory.Token(SyntaxKind.None));
+            var node_P = node.WithModifiers(
+                                 SyntaxFactory.TokenList(
+                                     node.Modifiers.Where(m => !m.IsKind(SyntaxKind.ReadOnlyKeyword))))
+                             .WithParameterList(null)
+                             .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
 
             var ctorDecl =
                 SyntaxFactory.ConstructorDeclaration(node.Identifier)
-                    .WithModifiers(node.Modifiers)
+                    .WithModifiers(node_P.Modifiers)
                     .WithParameterList(node.ParameterList.WithoutTrivia())
                     .WithBody(SyntaxFactory.Block().WithoutTrivia())
                     .WithoutTrivia();
 
             if (node_P.BaseList != null)
             {
-                SeparatedSyntaxList<BaseTypeSyntax> bases_P = new();
-                foreach (var b in node_P.BaseList.Types)
+                SeparatedSyntaxList<BaseTypeSyntax> basesTy_P = new();
+                foreach (var baseTyAndCtor in node_P.BaseList.Types)
                 {
-                    var baseTy = b;
-                    if (baseTy is PrimaryConstructorBaseTypeSyntax baseCtorDecl)
+                    BaseTypeSyntax baseTy;
+                    if (baseTyAndCtor is PrimaryConstructorBaseTypeSyntax ctorDeclTy)
                     {
-                        ctorDecl =
-                            ctorDecl.WithInitializer(
+                        ctorDecl = ctorDecl
+                            .WithInitializer(
                                 SyntaxFactory.ConstructorInitializer(
                                     SyntaxKind.BaseConstructorInitializer,
-                                    baseCtorDecl.ArgumentList));
-                        baseTy =
-                            SyntaxFactory.SimpleBaseType(baseCtorDecl.Type);
+                                    ctorDeclTy.ArgumentList));
+                        baseTy = SyntaxFactory.SimpleBaseType(ctorDeclTy.Type);
                     }
-                    bases_P = bases_P.Add(baseTy);
+                    else
+                    {
+                        baseTy = baseTyAndCtor;
+                    }
+                    basesTy_P = basesTy_P.Add(baseTy);
                 }
-                node_P = node_P.WithBaseList(SyntaxFactory.BaseList(bases_P));
+                node_P = node_P.WithBaseList(SyntaxFactory.BaseList(basesTy_P));
             }
 
-            var membDecls = node_P.Members;
-            if (membDecls.Any())
-            {
-                var membDecl = membDecls.Last();
-                membDecls = membDecls.Replace(membDecl, membDecl.WithoutTrailingTrivia());
-                ctorDecl = ctorDecl.WithTrailingTrivia(membDecl.GetTrailingTrivia());
-            }
-            membDecls = membDecls.Add(ctorDecl);
-
+            SyntaxList<MemberDeclarationSyntax> membDecls_P = new();
             foreach (var parmDecl in node.ParameterList.Parameters)
             {
+                var initStmt =
+                    SyntaxFactory.ExpressionStatement(
+                        SyntaxFactory.AssignmentExpression(
+                            SyntaxKind.SimpleAssignmentExpression,
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.ThisExpression(),
+                                SyntaxFactory.IdentifierName(parmDecl.Identifier.Text)),
+                            SyntaxFactory.IdentifierName(parmDecl.Identifier.Text)));
+                ctorDecl = ctorDecl.WithBody(ctorDecl.Body.AddStatements(initStmt));
+
                 var propDecl =
-                    SyntaxFactory.PropertyDeclaration(parmDecl.Type, parmDecl.Identifier)
+                    SyntaxFactory.PropertyDeclaration(parmDecl.Type, parmDecl.Identifier.Text)
                         .WithModifiers(SyntaxFactory.TokenList(
                             SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
                         .WithAccessorList(
@@ -86,13 +95,19 @@ namespace SharpSyntaxRewriter.Rewriters
                                          SyntaxKind.InitAccessorDeclaration)
                                      .WithSemicolonToken(
                                          SyntaxFactory.Token(SyntaxKind.SemicolonToken)))));
-                var membDecl = membDecls.Last();
-                membDecls = membDecls
-                    .Replace(membDecl, membDecl.WithoutTrailingTrivia())
-                    .Add(propDecl.WithTrailingTrivia(membDecl.GetTrailingTrivia()));
+                membDecls_P = membDecls_P.Add(propDecl);
             }
 
-            node_P = node_P.WithMembers(membDecls);
+            membDecls_P = membDecls_P.Add(ctorDecl);
+
+            node_P = node_P
+                .WithModifiers(node_P.Modifiers.Remove(SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)))
+                .WithMembers(membDecls_P.AddRange(node_P.Members))
+                .WithIdentifier(
+                    node.Identifier
+                        .WithTrailingTrivia(
+                            node.ParameterList.OpenParenToken.LeadingTrivia.AddRange(
+                            node.ParameterList.CloseParenToken.TrailingTrivia)));
 
             if (!node.SemicolonToken.IsKind(SyntaxKind.None))
             {
@@ -102,13 +117,6 @@ namespace SharpSyntaxRewriter.Rewriters
                     .WithCloseBraceToken(SyntaxFactory.Token(SyntaxKind.CloseBraceToken)
                         .WithTrailingTrivia(node.SemicolonToken.TrailingTrivia));
             }
-
-            node_P = node_P
-                .WithIdentifier(
-                    node.Identifier
-                        .WithTrailingTrivia(
-                            node.ParameterList.OpenParenToken.LeadingTrivia.AddRange(
-                            node.ParameterList.CloseParenToken.TrailingTrivia)));
 
             return node_P;
         }

@@ -994,5 +994,53 @@ public class T : BaseItem
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImposeThisPrefixSkipAttributes()
+        {
+            var original = @"
+using System;
+
+[System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+public class ExampleAttribute : System.Attribute
+{
+    public ExampleAttribute(int i) {}
+}
+
+public class C
+{
+    public void f()
+    {
+        Func<string, int> parse = [Example(1)] (s) => int.Parse(s);
+        var choose = [Example(2)][Example(3)] object (bool b) => b ? 1 : ""two"";
+        var sum = ([Example(1)] int a, [Example(2), Example(3)] int b) => a + b;
+        var inc = [return: Example(1)] (int s) => s++;
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+[System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+public class ExampleAttribute : System.Attribute
+{
+    public ExampleAttribute(int i) {}
+}
+
+public class C
+{
+    public void f()
+    {
+        Func<string, int> parse = [Example(1)] (s) => int.Parse(s);
+        var choose = [Example(2)][Example(3)] object (bool b) => b ? 1 : ""two"";
+        var sum = ([Example(1)] int a, [Example(2), Example(3)] int b) => a + b;
+        var inc = [return: Example(1)] (int s) => s++;
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
