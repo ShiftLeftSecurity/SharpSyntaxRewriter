@@ -44,21 +44,37 @@ namespace SharpSyntaxRewriter.Rewriters
 
         private readonly Stack<List<__BackingFieldInfo>> __ctx = new();
 
+        // In a `struct', fields must be initialized in the constructor.
+        private readonly Stack<List<StatementSyntax>> __initStmts = new();
+
         public override SyntaxNode VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
             return node;
         }
 
-        private TypeDeclarationSyntax VisitTypeDeclaration<TypeDeclarationSyntaxT>(
-                TypeDeclarationSyntaxT node,
-                Func<TypeDeclarationSyntaxT, SyntaxNode> visit)
-            where TypeDeclarationSyntaxT : TypeDeclarationSyntax
+        private TypeDeclarationSyntax VisitTypeDeclaration<TypeDeclarationT>(
+                TypeDeclarationT node,
+                Func<TypeDeclarationT, SyntaxNode> visit)
+            where TypeDeclarationT : TypeDeclarationSyntax
         {
+            if (node.IsKind(SyntaxKind.StructDeclaration)
+                    || node.IsKind(SyntaxKind.RecordStructDeclaration))
+            {
+                __initStmts.Push(new List<StatementSyntax>());
+            }
+
             __ctx.Push(new List<__BackingFieldInfo>());
             var node_P = (TypeDeclarationSyntax)visit(node);
             var fldInfos = __ctx.Pop();
 
-            var fldTbl = fldInfos.ToDictionary(fld => fld.Name);
+            List<StatementSyntax> stmts = null;
+            if (node.IsKind(SyntaxKind.StructDeclaration)
+                   || node.IsKind(SyntaxKind.RecordStructDeclaration))
+            {
+                stmts = __initStmts.Pop();
+            }
+
+            var fldNamesTbl = fldInfos.ToDictionary(fld => fld.Name);
             var fldDecls = new List<MemberDeclarationSyntax>();
 
             foreach (var membDecl in node_P.Members)
@@ -70,16 +86,16 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
 
                 var propName = SynthesizedFieldName(propDecl.Identifier.Text);
-                if (fldTbl.ContainsKey(propName))
+                if (fldNamesTbl.ContainsKey(propName))
                 {
-                    var fldInfo = fldTbl[propName];
+                    var fldInfo = fldNamesTbl[propName];
                     var fldDecl =
                         SyntaxFactory.FieldDeclaration(
                             SyntaxFactory.List<AttributeListSyntax>(),
                             SyntaxFactory.TokenList(
                                 fldInfo.Modifiers.Where(
-                                    m => m.Kind() != SyntaxKind.VirtualKeyword
-                                         && m.Kind() != SyntaxKind.OverrideKeyword)),
+                                    mod => !mod.IsKind(SyntaxKind.VirtualKeyword)
+                                           && !mod.IsKind(SyntaxKind.OverrideKeyword))),
                             SyntaxFactory.VariableDeclaration(
                                 fldInfo.TySpec,
                                 SyntaxFactory.SeparatedList(
@@ -95,7 +111,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
                     // Remove the property from the table because, in the presence
                     // of interface-overriden ones, we'll see the property twice.
-                    _ = fldTbl.Remove(propName);
+                    _ = fldNamesTbl.Remove(propName);
                 }
                 else
                 {
@@ -103,42 +119,18 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
             }
 
-            return node_P.WithMembers(SyntaxFactory.List(fldDecls));
-        }
+            node_P = node_P.WithMembers(SyntaxFactory.List(fldDecls));
 
-        public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
-        {
-            return VisitTypeDeclaration(node,
-                                        base.VisitClassDeclaration);
-        }
-
-        public override SyntaxNode VisitRecordDeclaration(RecordDeclarationSyntax node)
-        {
-            return VisitTypeDeclaration(node,
-                                        base.VisitRecordDeclaration);
-        }
-
-        // In a `struct', it's required that fields are initialized... we must
-        // artificially create corresponding initializers.
-        private readonly Stack<List<StatementSyntax>> __struct = new();
-
-        public override SyntaxNode VisitStructDeclaration(StructDeclarationSyntax node)
-        {
-            __struct.Push(new List<StatementSyntax>());
-            var node_P = VisitTypeDeclaration(node, n => base.VisitStructDeclaration((StructDeclarationSyntax)n));
-            var stmts = __struct.Pop();
-
-            if (stmts.Any())
+            if (stmts != null && stmts.Any())
             {
                 var ctorDecls = node_P.DescendantNodes()
                                       .OfType<ConstructorDeclarationSyntax>();
                 if (ctorDecls.Any())
                 {
-                    var ctorTbl =
-                        new Dictionary<ConstructorDeclarationSyntax,
-                                       ConstructorDeclarationSyntax>();
-                    var ctorDecls_P = node_P.DescendantNodes()
-                                            .OfType<ConstructorDeclarationSyntax>();
+                    var ctorTbl = new Dictionary<
+                            ConstructorDeclarationSyntax,
+                            ConstructorDeclarationSyntax>();
+                    var ctorDecls_P = ctorDecls;
                     foreach (var ctorDecl in ctorDecls_P)
                     {
                         var ctorDecl_P = ctorDecl
@@ -153,6 +145,24 @@ namespace SharpSyntaxRewriter.Rewriters
             }
 
             return node_P;
+        }
+
+        public override SyntaxNode VisitRecordDeclaration(RecordDeclarationSyntax node)
+        {
+            return VisitTypeDeclaration(node,
+                                        base.VisitRecordDeclaration);
+        }
+
+        public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
+        {
+            return VisitTypeDeclaration(node,
+                                        base.VisitClassDeclaration);
+        }
+
+        public override SyntaxNode VisitStructDeclaration(StructDeclarationSyntax node)
+        {
+            return VisitTypeDeclaration(node,
+                                        base.VisitStructDeclaration);
         }
 
         public override SyntaxNode VisitPropertyDeclaration(PropertyDeclarationSyntax node)
@@ -179,7 +189,8 @@ namespace SharpSyntaxRewriter.Rewriters
 
             if (node.Initializer != null)
             {
-                Debug.Assert(node.Parent is not StructDeclarationSyntax);
+                Debug.Assert(!(node.Parent.IsKind(SyntaxKind.StructDeclaration)
+                                || node.Parent.IsKind(SyntaxKind.RecordStructDeclaration)));
 
                 fldInfo.EqualsValInit = node.Initializer;
                 node = node.RemoveNode(node.Initializer,
@@ -187,9 +198,10 @@ namespace SharpSyntaxRewriter.Rewriters
                            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
                            .WithTrailingTrivia(node.SemicolonToken.TrailingTrivia);
             }
-            else if (node.Parent is StructDeclarationSyntax structDecl)
+            else if (node.Parent.IsKind(SyntaxKind.StructDeclaration)
+                        || node.Parent.IsKind(SyntaxKind.RecordStructDeclaration))
             {
-                Debug.Assert(__struct.Any());
+                Debug.Assert(__initStmts.Any());
 
                 var initExpr =
                     SyntaxFactory.ExpressionStatement(
@@ -197,9 +209,10 @@ namespace SharpSyntaxRewriter.Rewriters
                             SyntaxKind.SimpleAssignmentExpression,
                             SyntaxFactory.IdentifierName(fldName),
                             SyntaxFactory.DefaultExpression(node.Type)));
-                __struct.Peek().Add(initExpr);
+                __initStmts.Peek().Add(initExpr);
 
-                if (ModifiersChecker.Has_readonly(structDecl.Modifiers)
+                var tyDecl = (TypeDeclarationSyntax)node.Parent;
+                if (ModifiersChecker.Has_readonly(tyDecl.Modifiers)
                         && !ModifiersChecker.Has_readonly(fldInfo.Modifiers))
                 {
                     fldInfo.Modifiers =

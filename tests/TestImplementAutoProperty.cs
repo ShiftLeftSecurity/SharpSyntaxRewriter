@@ -338,6 +338,27 @@ public struct S
         }
 
         [TestMethod]
+        public void TestImplementAutoPropertyInRecordStructWithConstructor()
+        {
+            var original = @"
+public record struct S
+{
+    public S(int iii) { TheIntProp = iii; }
+    public int TheIntProp { get; set; }
+}
+";
+
+            var expected = @"
+public record struct S
+{
+    public S(int iii) { ____LT____TheIntProp____GT____k_BackingField = default(int); TheIntProp = iii; }
+    public int TheIntProp { get { return____LT____TheIntProp____GT____k_BackingField;} set{____LT____TheIntProp____GT____k_BackingField=value;} } public int ____LT____TheIntProp____GT____k_BackingField;
+}
+";
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
         public void TestImplementAutoPropertyInStructNoConstructor()
         {
             var original = @"
