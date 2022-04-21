@@ -292,7 +292,7 @@ namespace SharpSyntaxRewriter.Rewriters
             if (decomp)
             {
                 var sym = node.ResolveSymbol(_semaModel,
-                                             ResolutionAccuracy.Transitive);
+                                               ResolutionAccuracy.Approximate);
                 if (sym is IMethodSymbol methSym
                         && ReturnTypeInfo.ImpliesVoid(methSym.ReturnType, methSym.IsAsync))
                 {

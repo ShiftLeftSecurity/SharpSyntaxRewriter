@@ -11,7 +11,7 @@ namespace SharpSyntaxRewriter.Extensions
     public enum ResolutionAccuracy
     {
         Exact,
-        Transitive
+        Approximate
     }
 
     public static class ExpressionSyntaxExtensions
@@ -29,8 +29,8 @@ namespace SharpSyntaxRewriter.Extensions
             };
         }
 
-        public static ITypeSymbol ResolveType(this ExpressionSyntax exprNode,
-                                              SemanticModel semaModel)
+        public static ITypeSymbol ResultType(this ExpressionSyntax exprNode,
+                                             SemanticModel semaModel)
         {
             Debug.Assert(semaModel != null);
 
