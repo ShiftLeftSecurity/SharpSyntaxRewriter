@@ -336,7 +336,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node;
 
             var storeTySym = storeObj is ExpressionSyntax
-                    ? (storeObj as ExpressionSyntax).ResultType(_semaModel)
+                    ? (storeObj as ExpressionSyntax).ResultType(_semaModel,
+                                                                TypeFormation.PossiblyConverted)
                     : _semaModel.GetDeclaredSymbol(storeObj).ValueType();
 
             // If the assigned type is different (e.g., a base type) than the type of the object

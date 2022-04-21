@@ -14,6 +14,12 @@ namespace SharpSyntaxRewriter.Extensions
         Approximate
     }
 
+    public enum TypeFormation
+    {
+        WithoutConversion,
+        PossiblyConverted
+    }
+
     public static class ExpressionSyntaxExtensions
     {
         public static ExpressionSyntax Stripped(this ExpressionSyntax exprNode)
@@ -30,11 +36,15 @@ namespace SharpSyntaxRewriter.Extensions
         }
 
         public static ITypeSymbol ResultType(this ExpressionSyntax exprNode,
-                                             SemanticModel semaModel)
+                                             SemanticModel semaModel,
+                                             TypeFormation formation)
         {
             Debug.Assert(semaModel != null);
 
-            var tySym = semaModel.GetTypeInfo(exprNode).ConvertedType;
+            var tyInfo = semaModel.GetTypeInfo(exprNode);
+            var tySym = formation == TypeFormation.WithoutConversion
+                        ? tyInfo.Type
+                        : tyInfo.ConvertedType;
 
             switch (tySym)
             {
