@@ -79,7 +79,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitSwitchExpression(SwitchExpressionSyntax node)
         {
-            var tySym = node.ResultType(_semaModel);
+            var tySym = node.ResultType(_semaModel, TypeFormation.PossiblyConverted);
 
             return VisitCreationExpression(
                         node,
