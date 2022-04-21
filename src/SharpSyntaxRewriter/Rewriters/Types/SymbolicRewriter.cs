@@ -28,7 +28,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 
         public bool IsExpressionTreeVisit(AnonymousFunctionExpressionSyntax node)
         {
-            return node.ResolveType(_semaModel).IsExpressionTree();
+            return node.ResultType(_semaModel).IsExpressionTree();
         }
     }
 }

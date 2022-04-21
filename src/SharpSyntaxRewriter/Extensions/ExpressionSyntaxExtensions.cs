@@ -11,7 +11,7 @@ namespace SharpSyntaxRewriter.Extensions
     public enum ResolutionAccuracy
     {
         Exact,
-        Transitive
+        Approximate
     }
 
     public static class ExpressionSyntaxExtensions
@@ -29,24 +29,34 @@ namespace SharpSyntaxRewriter.Extensions
             };
         }
 
-        public static ITypeSymbol ResolveType(this ExpressionSyntax exprNode,
-                                              SemanticModel semaModel)
+        public static ITypeSymbol ResultType(this ExpressionSyntax exprNode,
+                                             SemanticModel semaModel)
         {
             Debug.Assert(semaModel != null);
 
             var tySym = semaModel.GetTypeInfo(exprNode).ConvertedType;
 
-            if (tySym is ITypeParameterSymbol tyParmSym
-                    && exprNode is SimpleNameSyntax nameNode)
+            switch (tySym)
             {
-                return tyParmSym.SpecializedFor(nameNode);
+                case null:
+                    var op = semaModel.GetOperation(exprNode);
+                    if (op != null && op.Kind != OperationKind.None)
+                        return op.Type;
+                    break;
+
+                case ITypeParameterSymbol tyParmSym:
+                    // REVIEW: This "specialization" should be based on type constraints.
+                    if (exprNode is SimpleNameSyntax nameNode)
+                        return tyParmSym.SpecializedFor(nameNode);
+                    break;
             }
+
             return tySym;
         }
 
-        public static ISymbol ResolveSymbol(this ExpressionSyntax exprNode,
-                                            SemanticModel semaModel,
-                                            ResolutionAccuracy accuracy)
+        public static ISymbol ResolvedSymbol(this ExpressionSyntax exprNode,
+                                             SemanticModel semaModel,
+                                             ResolutionAccuracy accuracy)
         {
             Debug.Assert(semaModel != null);
 

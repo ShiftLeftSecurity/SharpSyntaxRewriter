@@ -43,8 +43,8 @@ namespace SharpSyntaxRewriter.Rewriters
             if (node.Parent is AssignmentExpressionSyntax assgExpr
                     && !(node.Parent.Parent is InitializerExpressionSyntax))
             {
-                var sym = assgExpr.Left.ResolveSymbol(_semaModel,
-                                                      ResolutionAccuracy.Exact);
+                var sym = assgExpr.Left.ResolvedSymbol(_semaModel,
+                                                       ResolutionAccuracy.Exact);
                 if (sym is ILocalSymbol || sym is IParameterSymbol)
                     return node_P;
             }
@@ -79,7 +79,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitSwitchExpression(SwitchExpressionSyntax node)
         {
-            var tySym = node.ResolveType(_semaModel);
+            var tySym = node.ResultType(_semaModel);
 
             return VisitCreationExpression(
                         node,
