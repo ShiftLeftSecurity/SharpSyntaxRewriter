@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>SharpSyntaxRewriter</PackageId>
-    <PackageVersion>1.0.38</PackageVersion>
+    <PackageVersion>1.0.39</PackageVersion>
     <Authors>Leandro T. C. Melo</Authors>
     <Copyright>ShiftLeft Inc.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>

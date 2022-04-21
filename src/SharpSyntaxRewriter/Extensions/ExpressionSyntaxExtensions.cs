@@ -41,7 +41,7 @@ namespace SharpSyntaxRewriter.Extensions
                 case null:
                     var op = semaModel.GetOperation(exprNode);
                     if (op != null && op.Kind != OperationKind.None)
-                        return op.Type;
+                        return op.Type ?? semaModel.Compilation.ObjectType;
                     break;
 
                 case ITypeParameterSymbol tyParmSym:
