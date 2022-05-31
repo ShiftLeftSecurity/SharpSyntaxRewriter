@@ -63,6 +63,11 @@ namespace SharpSyntaxRewriter.Rewriters
             where TypeDeclarationT : TypeDeclarationSyntax
         {
             var tySym = _semaModel.GetDeclaredSymbol(node);
+            if (tySym == null)
+            {
+                NodeWithoutSymbol(node);
+                return node;
+            }
 
             var anonTyInfo =
                 new __AnonymousTypeInfo(
@@ -119,6 +124,13 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitAnonymousObjectCreationExpression(
                 AnonymousObjectCreationExpressionSyntax node)
         {
+            var anonTySym = _semaModel.GetTypeInfo(node).Type;
+            if (anonTySym == null)
+            {
+                NodeWithoutSymbol(node);
+                return node;
+            }
+
             var propDecls = SyntaxFactory.List<MemberDeclarationSyntax>();
             var tyParms = new HashSet<string>();
             var access = Accessibility.Internal;
@@ -160,6 +172,11 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
 
                 var exprTySym = _semaModel.GetTypeInfo(dcltorNode.Expression).Type;
+                if (exprTySym == null)
+                {
+                    NodeWithoutSymbol(dcltorNode.Expression);
+                    continue;
+                }
 
                 if (exprTySym.DeclaredAccessibility < access)
                     access = exprTySym.DeclaredAccessibility;
@@ -205,7 +222,6 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
             }
 
-            var anonTySym = _semaModel.GetTypeInfo(node).Type;
             string deanonTyName;
             if (__deanonTyNames.ContainsKey(anonTySym))
             {
@@ -214,9 +230,9 @@ namespace SharpSyntaxRewriter.Rewriters
             else
             {
                 deanonTyName = SynthesizeTypeDeclaration(
-                    access.ToRewriteToken(),
-                    propDecls,
-                    tyParms.ToList());
+                        access.ToRewriteToken(),
+                        propDecls,
+                        tyParms.ToList());
                 __deanonTyNames.Add(anonTySym, deanonTyName);
             }
 
@@ -272,6 +288,8 @@ namespace SharpSyntaxRewriter.Rewriters
                     // parameterized by another anonymous type discovered later.
                     foreach (var knownTySym in __deanonTyNames.Keys.Reverse())
                     {
+                        Debug.Assert(knownTySym != null);
+
                         var s = knownTySym.ToMinimalDisplayString(_semaModel, spanPos);
                         tyName = tyName.Replace(s, __deanonTyNames[knownTySym]);
                     }
@@ -279,6 +297,8 @@ namespace SharpSyntaxRewriter.Rewriters
 
                 if (__deanonTyNames.TryGetValue(underTySym, out string deanonTyName))
                 {
+                    Debug.Assert(underTySym != null);
+
                     var s = underTySym.ToMinimalDisplayString(_semaModel, spanPos);
                     tyName = tyName.Replace(s, deanonTyName);
                 }
@@ -298,6 +318,12 @@ namespace SharpSyntaxRewriter.Rewriters
                     case IPropertySymbol propSym:
                         if (string.IsNullOrEmpty(propSym.Name))
                             break;
+
+                        if (propSym.Type == null)
+                        {
+                            NodeWithoutSymbol(null);
+                            break;
+                        }
 
                         var membTySpec =
                             RecognizePropertyOfAnonymousType(propSym.Type, spanPos);
@@ -336,9 +362,10 @@ namespace SharpSyntaxRewriter.Rewriters
             return SyntaxFactory.ParseTypeName(tyDecl);
         }
 
-        private static List<string> CollectTypeParameterNamesOfAnonymousType(
-                ITypeSymbol tySym)
+        private static List<string> CollectTypeParameterNamesOfAnonymousType(ITypeSymbol tySym)
         {
+            Debug.Assert(tySym != null);
+
             var tyParmsNames = new List<string>();
             switch (tySym)
             {
@@ -350,19 +377,22 @@ namespace SharpSyntaxRewriter.Rewriters
                     if (namedTySym.IsAnonymousType)
                     {
                         foreach (var sym in tySym.GetMembers())
-                            if (sym is IPropertySymbol propSym)
+                        {
+                            if (sym is IPropertySymbol propSym && propSym.Type != null)
                             {
-                                tyParmsNames.AddRange(
-                                    CollectTypeParameterNamesOfAnonymousType(propSym.Type));
+                                tyParmsNames.AddRange(CollectTypeParameterNamesOfAnonymousType(propSym.Type));
                             }
+                        }
                     }
                     else if (namedTySym.IsGenericType
                                 && namedTySym.OriginalDefinition.SpecialType
                                         != SpecialType.System_Nullable_T)
                     {
-                        namedTySym.TypeArguments.ToList().ForEach(
-                            sym => tyParmsNames.AddRange(
-                                CollectTypeParameterNamesOfAnonymousType(sym)));
+                        foreach (var tyArg in namedTySym.TypeArguments)
+                        {
+                            Debug.Assert(tyArg != null);
+                            tyParmsNames.AddRange(CollectTypeParameterNamesOfAnonymousType(tyArg));
+                        }
                     }
                     break;
             }

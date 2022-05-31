@@ -41,15 +41,13 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 
         protected void NodeWithoutSymbol(SyntaxNode node)
         {
-            Debug.Assert(node != null);
-
 #if DEBUG_INACCURATE_REWRITES
             Console.WriteLine($"innacurate rewrite in node: {node}");
 #endif
 
             __wasRewriteAcurate = false;
             if (__expectAccurateRewrite)
-                throw new UnexpectedInaccurateRewriteException(node.ToString());
+                throw new UnexpectedInaccurateRewriteException(node?.ToString());
         }
 
         public bool IsExpressionTreeVisit(AnonymousFunctionExpressionSyntax node)
