@@ -43,7 +43,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         protected void SymbolIsInvalid(ISymbol sym)
         {
             StringBuilder sb = new("invalid symbol");
-            foreach (var loc in sym.Locations)
+            foreach (var loc in sym?.Locations)
             {
                 if (loc.IsInMetadata || !loc.IsInSource)
                 {
