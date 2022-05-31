@@ -172,8 +172,9 @@ namespace SharpSyntaxRewriter.Rewriters
             var node_P = (LambdaT)visit(node);
 
             var methSym = _semaModel.GetSymbolInfo(node).Symbol as IMethodSymbol;
-            if (!ReturnTypeInfo.ImpliesVoid(methSym.ReturnType,
-                                            methSym.IsAsync))
+            if (!ValidateSymbol(methSym)
+                    || !ReturnTypeInfo.ImpliesVoid(methSym.ReturnType,
+                                                   methSym.IsAsync))
             {
                 return node_P;
             }
