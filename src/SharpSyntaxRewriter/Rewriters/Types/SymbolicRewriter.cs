@@ -25,10 +25,13 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         private bool __expectAccurateRewrite;
 
         public virtual SyntaxTree Apply(SyntaxTree tree,
-                                        SemanticModel semaModel)
+                                        SemanticModel semaModel,
+                                        bool expectAccurateRewrite = true)
         {
             Debug.Assert(semaModel != null);
             _semaModel = semaModel;
+
+            __expectAccurateRewrite = expectAccurateRewrite;
 
             return base.RewriteTree(tree);
         }
