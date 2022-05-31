@@ -38,6 +38,7 @@
     <Folder Include="Adapters\" />
     <Folder Include="Utilities\" />
     <Folder Include="Rewriters\Types\" />
+    <Folder Include="Rewriters\Exceptions\" />
   </ItemGroup>
 
   <ItemGroup>
