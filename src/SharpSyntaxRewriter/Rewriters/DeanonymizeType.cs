@@ -63,11 +63,8 @@ namespace SharpSyntaxRewriter.Rewriters
             where TypeDeclarationT : TypeDeclarationSyntax
         {
             var tySym = _semaModel.GetDeclaredSymbol(node);
-            if (tySym == null)
-            {
-                NodeWithoutSymbol(node);
+            if (!ValidateSymbol(tySym))
                 return node;
-            }
 
             var anonTyInfo =
                 new __AnonymousTypeInfo(
@@ -125,11 +122,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 AnonymousObjectCreationExpressionSyntax node)
         {
             var anonTySym = _semaModel.GetTypeInfo(node).Type;
-            if (anonTySym == null)
-            {
-                NodeWithoutSymbol(node);
+            if (!ValidateSymbol(anonTySym))
                 return node;
-            }
 
             var propDecls = SyntaxFactory.List<MemberDeclarationSyntax>();
             var tyParms = new HashSet<string>();
@@ -172,11 +166,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
 
                 var exprTySym = _semaModel.GetTypeInfo(dcltorNode.Expression).Type;
-                if (exprTySym == null)
-                {
-                    NodeWithoutSymbol(dcltorNode.Expression);
+                if (!ValidateSymbol(exprTySym))
                     continue;
-                }
 
                 if (exprTySym.DeclaredAccessibility < access)
                     access = exprTySym.DeclaredAccessibility;
@@ -321,7 +312,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
                         if (propSym.Type == null)
                         {
-                            NodeWithoutSymbol(null);
+                            SymbolIsInvalid(null);
                             break;
                         }
 

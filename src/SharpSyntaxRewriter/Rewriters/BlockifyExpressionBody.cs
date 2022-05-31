@@ -168,11 +168,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node_P;
 
             var methSym = _semaModel.GetSymbolInfo(node).Symbol as IMethodSymbol;
-            if (methSym == null || methSym.ReturnType == null)
-            {
-                NodeWithoutSymbol(node);
+            if (!ValidateSymbol(methSym))
                 return node_P;
-            }
 
             var blockNode = WrapInBlock(
                     node_P.ExpressionBody,

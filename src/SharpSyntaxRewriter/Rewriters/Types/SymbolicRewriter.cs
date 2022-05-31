@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -39,15 +40,61 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         private bool __wasRewriteAcurate = true;
         public bool WasRewriteAccurate => __wasRewriteAcurate;
 
-        protected void NodeWithoutSymbol(SyntaxNode node)
+        protected void SymbolIsInvalid(ISymbol sym)
         {
+            StringBuilder sb = new("invalid symbol");
+            foreach (var loc in sym.Locations)
+            {
+                if (loc.IsInMetadata || !loc.IsInSource)
+                {
+                    sb.Append($" (metadata or unknown: {loc.Kind})");
+                    continue;
+                }
+
+                sb.Append(loc.SourceTree.FilePath);
+                sb.Append(' ');
+                sb.Append(loc.SourceSpan);
+            }
+
 #if DEBUG_INACCURATE_REWRITES
-            Console.WriteLine($"innacurate rewrite in node: {node}");
+            Console.WriteLine(sb.ToString());
 #endif
 
             __wasRewriteAcurate = false;
             if (__expectAccurateRewrite)
-                throw new UnexpectedInaccurateRewriteException(node?.ToString());
+                throw new UnexpectedInaccurateRewriteException(sb.ToString());
+        }
+
+        protected bool ValidateSymbol(ISymbol sym)
+        {
+            if (sym == null || sym.Kind == SymbolKind.ErrorType)
+            {
+                SymbolIsInvalid(sym);
+                return false;
+            }
+            return true;
+        }
+
+        protected bool ValidateSymbol(ITypeSymbol tySym)
+        {
+            if (tySym == null || tySym.TypeKind == TypeKind.Error)
+            {
+                SymbolIsInvalid(tySym);
+                return false;
+            }
+            return true;
+        }
+
+        protected bool ValidateSymbol(IMethodSymbol methSym)
+        {
+            if (methSym == null
+                    || methSym.ReturnType == null
+                    || methSym.ReturnType.TypeKind == TypeKind.Error)
+            {
+                SymbolIsInvalid(methSym);
+                return false;
+            }
+            return true;
         }
 
         public bool IsExpressionTreeVisit(AnonymousFunctionExpressionSyntax node)
