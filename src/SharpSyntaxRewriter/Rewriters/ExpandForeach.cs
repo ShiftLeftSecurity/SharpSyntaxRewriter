@@ -25,9 +25,9 @@ namespace SharpSyntaxRewriter.Rewriters
             return node.WithBody((BlockSyntax)node.Body.Accept(this));
         }
 
-        public SyntaxNode VisitCommonForEachStatementSyntax(CommonForEachStatementSyntax node,
-                                                            ITypeSymbol collectionTySym,
-                                                            StatementSyntax stmt)
+        private SyntaxNode VisitCommonForEachStatementSyntax(CommonForEachStatementSyntax node,
+                                                             ITypeSymbol collectionTySym,
+                                                             StatementSyntax stmt)
         {
             if (collectionTySym is IDynamicTypeSymbol)
             {
@@ -111,7 +111,12 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitForEachStatement(ForEachStatementSyntax node)
         {
             var foreachInfo = _semaModel.GetForEachStatementInfo(node);
+
+            var colTySym = foreachInfo.GetEnumeratorMethod.ContainingType;
             var castTySym = _semaModel.GetTypeInfo(node.Type).Type;
+            if (!ValidateSymbol(colTySym) || !ValidateSymbol(castTySym))
+                return node;
+
             var declStmt =
                 SyntaxFactory.LocalDeclarationStatement(
                     SyntaxFactory.VariableDeclaration(
@@ -137,7 +142,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             return VisitCommonForEachStatementSyntax(
                         node,
-                        foreachInfo.GetEnumeratorMethod.ContainingType,
+                        colTySym,
                         declStmt);
         }
 
@@ -145,6 +150,10 @@ namespace SharpSyntaxRewriter.Rewriters
             // This is a weirdly named AST node, see: https://github.com/dotnet/roslyn/issues/35809
         {
             var foreachInfo = _semaModel.GetForEachStatementInfo(node);
+            var colTySym = foreachInfo.GetEnumeratorMethod.ContainingType;
+            if (!ValidateSymbol(colTySym))
+                return node;
+
             var exprStmt =
                 SyntaxFactory.ExpressionStatement(
                     SyntaxFactory.AssignmentExpression(
@@ -164,7 +173,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             return VisitCommonForEachStatementSyntax(
                         node,
-                        foreachInfo.GetEnumeratorMethod.ContainingType,
+                        colTySym,
                         exprStmt);
         }
 
