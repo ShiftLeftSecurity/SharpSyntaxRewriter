@@ -22,7 +22,6 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         }
 
         protected SemanticModel _semaModel { get; private set; }
-
         private bool __reliableSemaModel;
 
         public virtual SyntaxTree Apply(SyntaxTree tree,
