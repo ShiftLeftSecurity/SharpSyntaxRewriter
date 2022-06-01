@@ -23,16 +23,15 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 
         protected SemanticModel _semaModel { get; private set; }
 
-        private bool __expectAccurateRewrite;
+        private bool __reliableSemaModel;
 
         public virtual SyntaxTree Apply(SyntaxTree tree,
                                         SemanticModel semaModel,
-                                        bool expectAccurateRewrite = true)
+                                        bool reliableSemaModel = true)
         {
             Debug.Assert(semaModel != null);
             _semaModel = semaModel;
-
-            __expectAccurateRewrite = expectAccurateRewrite;
+            __reliableSemaModel = reliableSemaModel;
 
             return base.RewriteTree(tree);
         }
@@ -61,7 +60,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 #endif
 
             __wasRewriteAcurate = false;
-            if (__expectAccurateRewrite)
+            if (__reliableSemaModel)
                 throw new UnexpectedInaccurateRewriteException(sb.ToString());
         }
 
