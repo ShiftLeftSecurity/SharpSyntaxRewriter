@@ -176,6 +176,14 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitConditionalAccessExpression(ConditionalAccessExpressionSyntax node)
         {
+            var prefixTySym = _semaModel.GetTypeInfo(node.Expression).ConvertedType;
+            if (!ValidateSymbol(prefixTySym))
+                return node;
+
+            var exprTySym = _semaModel.GetTypeInfo(node.WhenNotNull).ConvertedType;
+            if (!ValidateSymbol(exprTySym))
+                return node;
+
             var prefixExpr_P = (ExpressionSyntax)node.Expression.Accept(this);
             prefixExpr_P =
                 prefixExpr_P.WithoutTrivia()
@@ -185,7 +193,6 @@ namespace SharpSyntaxRewriter.Rewriters
                                     .AddRange(node.OperatorToken.LeadingTrivia)
                                     .AddRange(node.OperatorToken.TrailingTrivia));
 
-            var prefixTySym = _semaModel.GetTypeInfo(node.Expression).ConvertedType;
             if (prefixTySym.IsValueType)
             {
                 prefixExpr_P =
@@ -205,7 +212,6 @@ namespace SharpSyntaxRewriter.Rewriters
                 SyntaxFactory.LiteralExpression(
                     SyntaxKind.NullLiteralExpression);
 
-            var exprTySym = _semaModel.GetTypeInfo(node.WhenNotNull).ConvertedType;
             if (exprTySym.IsValueType)
             {
                 if (exprTySym.OriginalDefinition != null
@@ -245,8 +251,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var node_P = base.Visit(node);
 
-            if (decomp
-                    && node.Parent.Kind() != SyntaxKind.ExpressionStatement)
+            if (decomp && node.Parent.Kind() != SyntaxKind.ExpressionStatement)
             {
                 return DecomposeIntoExpression(__ctx.Pop(), (ExpressionSyntax)node_P);
             }
@@ -293,7 +298,8 @@ namespace SharpSyntaxRewriter.Rewriters
             {
                 var sym = node.ResolvedSymbol(_semaModel,
                                               ResolutionAccuracy.Approximate);
-                if (sym is IMethodSymbol methSym
+                if (ValidateSymbol(sym)
+                        && sym is IMethodSymbol methSym
                         && ReturnTypeInfo.ImpliesVoid(methSym.ReturnType, methSym.IsAsync))
                 {
                     var stmt = DecomposeIntoStatement(__ctx.Pop(), (ExpressionSyntax)node_P.Body);

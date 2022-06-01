@@ -109,10 +109,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node_P;
 
             var tySym = _semaModel.GetTypeInfo(exprOf(node)).Type;
-            if (tySym == null)
-            {
+            if (!ValidateSymbol(tySym))
                 return node_P;
-            }
 
             if (exprOf(node_P).Stripped() is AssignmentExpressionSyntax assignExpr)
             {
@@ -328,27 +326,31 @@ namespace SharpSyntaxRewriter.Rewriters
                                                      InitializerExpressionSyntax initExpr,
                                                      ITypeSymbol objTySym)
         {
-            if (initExpr == null || !initExpr.Expressions.Any())
+            if (initExpr == null
+                    || !initExpr.Expressions.Any()
+                    || !ValidateSymbol(objTySym))
+            {
+                return node;
+            }
+
+            var store = IdentifyObjectCreationStore(node);
+            if (store == null)
                 return node;
 
-            var storeObj = IdentifyObjectCreationStore(node);
-            if (storeObj == null)
-                return node;
+            var storeTySym = store is ExpressionSyntax
+                    ? (store as ExpressionSyntax).ResultType(_semaModel, TypeFormation.PossiblyConverted)
+                    : _semaModel.GetDeclaredSymbol(store)?.ValueType();
 
-            var storeTySym = storeObj is ExpressionSyntax
-                    ? (storeObj as ExpressionSyntax).ResultType(_semaModel,
-                                                                TypeFormation.PossiblyConverted)
-                    : _semaModel.GetDeclaredSymbol(storeObj).ValueType();
+            if (!ValidateSymbol(storeTySym))
+                return node;
 
             // If the assigned type is different (e.g., a base type) than the type of the object
             // being initialized, the property in question might not be accessible through it.
             // In this case, we create an extra local. See: https://github.com/dotnet/csharplang/issues/2533
 
-            if (objTySym != null
-                    && storeTySym != null
-                    && !SymbolEqualityComparer
-                            .Default.Equals(objTySym.OriginalDefinition,
-                                            storeTySym.OriginalDefinition))
+            if (!SymbolEqualityComparer.Default
+                                       .Equals(objTySym.OriginalDefinition,
+                                               storeTySym.OriginalDefinition))
             {
                 var node_P = (ExpressionSyntax)RemoveEveryTrivia__.Go(node);
 
@@ -367,7 +369,7 @@ namespace SharpSyntaxRewriter.Rewriters
                 var assignExpr = SyntaxFactory.ExpressionStatement(
                     SyntaxFactory.AssignmentExpression(
                         SyntaxKind.SimpleAssignmentExpression,
-                        SynthesizeStoreExpression(storeObj),
+                        SynthesizeStoreExpression(store),
                         objName));
 
                 __ctx.Peek().Insert(0, assignExpr);
@@ -375,7 +377,7 @@ namespace SharpSyntaxRewriter.Rewriters
                 __ctx.Peek().Insert(0, objDecl);
             }
             else
-                VisitStoredInitializerExpression(SynthesizeStoreExpression(storeObj), initExpr);
+                VisitStoredInitializerExpression(SynthesizeStoreExpression(store), initExpr);
 
             return node;
         }

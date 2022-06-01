@@ -64,6 +64,9 @@ namespace SharpSyntaxRewriter.Rewriters
             if (tySpec.IsVar)
             {
                 var tySym = _semaModel.GetTypeInfo(tySpec).Type;
+                if (!ValidateSymbol(tySym))
+                    return node;
+
                 tySpec = SyntaxFactory.ParseTypeName(
                     tySym.ToMinimalDisplayString(_semaModel, node.SpanStart));
             }

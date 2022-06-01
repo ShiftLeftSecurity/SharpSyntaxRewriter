@@ -83,20 +83,22 @@ namespace SharpSyntaxRewriter.Rewriters
             var node_P = (InterpolatedStringExpressionSyntax)base.VisitInterpolatedStringExpression(node);
             var interpolations = __ctx.Pop();
 
+            var convTySym = _semaModel.GetTypeInfo(node).ConvertedType;
+            if (!ValidateSymbol(convTySym))
+                return node_P;
+
             var fmtArgs =
                 SyntaxFactory.SingletonSeparatedList(
                     SyntaxFactory.Argument(
                         SyntaxFactory.LiteralExpression(
                             SyntaxKind.StringLiteralExpression,
                             SyntaxFactory.Literal(node_P.Contents.ToString()))));
-            interpolations.ForEach(
-                i => fmtArgs = fmtArgs.Add(SyntaxFactory.Argument(i)));
+
+            foreach (var interp in interpolations)
+                fmtArgs = fmtArgs.Add(SyntaxFactory.Argument(interp));
 
             InvocationExpressionSyntax callExpr;
-
-            var convTySym = _semaModel.GetTypeInfo(node).ConvertedType;
             var conv = _semaModel.ClassifyConversion(node, convTySym);
-
             if (!conv.Exists)
             {
                 if (convTySym.SpecialType == SpecialType.System_String)
@@ -116,6 +118,9 @@ namespace SharpSyntaxRewriter.Rewriters
             {
                 // There must exist a user-defined conversion.
                 var tySym = _semaModel.GetTypeInfo(node).Type;
+                if (!ValidateSymbol(tySym))
+                    return node_P;
+
                 if (tySym.SpecialType == SpecialType.System_String)
                     callExpr = Invocation(ResultTypeName.String, fmtArgs);
                 else

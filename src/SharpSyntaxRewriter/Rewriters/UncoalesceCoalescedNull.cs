@@ -67,20 +67,25 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node_P;
 
             var lhsTySym = _semaModel.GetTypeInfo(node.Left).ConvertedType;
+            if (!ValidateSymbol(lhsTySym))
+                return node_P;
+
             var lhsNode = node_P.Left;
+            DEBUG_OPERAND("LHS", lhsNode, lhsTySym);
 
             // Observe the subtlety: a non-implicitly convertible type is allowed
             // on the RHS of a null coalescing expression (since it's the first
             // operand that determines the result type), but not on the RHS
             // of a ternary operation. That's why we obtain the actual RHS type,
             // instead of converted one.
-            var rhsTySym = _semaModel.GetTypeInfo(node.Right).Type;
-            var rhsNode = node_P.Right;
+            var rhsOptTySym = _semaModel.GetTypeInfo(node.Right).Type;
 
             var resTySym = _semaModel.GetTypeInfo(node).ConvertedType;
+            if (!ValidateSymbol(resTySym))
+                return node_P;
 
-            DEBUG_OPERAND("LHS", lhsNode, lhsTySym);
-            DEBUG_OPERAND("RHS", rhsNode, rhsTySym);
+            var rhsNode = node_P.Right;
+            DEBUG_OPERAND("RHS", rhsNode, rhsOptTySym);
 
             var lhsTySym_P = ImplicitlyConvertibleType(lhsTySym, resTySym);
             if (lhsTySym_P == null)
@@ -96,10 +101,10 @@ namespace SharpSyntaxRewriter.Rewriters
                         SyntaxFactory.IdentifierName("Value"));
             }
 
-            if (rhsTySym != null)
+            if (rhsOptTySym != null)
             {
                 // The RHS might may not type (e.g., when it's a <throw expression>).
-                var rhsTySym_P = ImplicitlyConvertibleType(rhsTySym, resTySym);
+                var rhsTySym_P = ImplicitlyConvertibleType(rhsOptTySym, resTySym);
                 if (rhsTySym_P == null)
                 {
                     rhsNode = ExplicitCast(rhsNode, resTySym);
@@ -181,6 +186,8 @@ namespace SharpSyntaxRewriter.Rewriters
                                                           ITypeSymbol exactTySym,
                                                           ITypeSymbol convTySym)
         {
+            Debug.Assert(exactTySym != null, "exact type symbol expected");
+
             bool maybeAmbig = false;
             var tySym = convTySym ?? exactTySym;
             foreach (var membTySym in tySym.GetMembers())

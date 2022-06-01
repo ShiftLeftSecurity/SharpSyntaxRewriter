@@ -33,18 +33,15 @@ namespace SharpSyntaxRewriter.Rewriters
             if (!_ctx.Any())
                 return node_P;
 
-            // If we're within a declarator, then the variable being declared
-            // is a store.
+            // If we're within a declarator, then the variable being declared is a store.
             if (node.Parent.Parent is VariableDeclaratorSyntax)
                 return node_P;
 
-            // If we're within an assignment to a local or parameter, then
-            // then either of them is a store.
+            // If we're within an assignment to a local or parameter, then either one is a store.
             if (node.Parent is AssignmentExpressionSyntax assgExpr
                     && !(node.Parent.Parent is InitializerExpressionSyntax))
             {
-                var sym = assgExpr.Left.ResolvedSymbol(_semaModel,
-                                                       ResolutionAccuracy.Exact);
+                var sym = assgExpr.Left.ResolvedSymbol(_semaModel, ResolutionAccuracy.Exact);
                 if (sym is ILocalSymbol || sym is IParameterSymbol)
                     return node_P;
             }
@@ -80,6 +77,8 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitSwitchExpression(SwitchExpressionSyntax node)
         {
             var tySym = node.ResultType(_semaModel, TypeFormation.PossiblyConverted);
+            if (!ValidateSymbol(tySym))
+                return base.VisitSwitchExpression(node);
 
             return VisitCreationExpression(
                         node,
@@ -107,6 +106,8 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitStackAllocArrayCreationExpression(StackAllocArrayCreationExpressionSyntax node)
         {
             var tySym = _semaModel.GetTypeInfo(node).Type;
+            if (!ValidateSymbol(tySym))
+                return base.VisitStackAllocArrayCreationExpression(node);
 
             return VisitCreationExpression(
                         node,
@@ -118,6 +119,8 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitImplicitObjectCreationExpression(ImplicitObjectCreationExpressionSyntax node)
         {
             var tySym = _semaModel.GetTypeInfo(node).Type;
+            if (!ValidateSymbol(tySym))
+                return base.VisitImplicitObjectCreationExpression(node);
 
             return VisitCreationExpression(
                         node,
@@ -129,9 +132,10 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitImplicitArrayCreationExpression(ImplicitArrayCreationExpressionSyntax node)
         {
             var tySym = _semaModel.GetTypeInfo(node).Type;
+            if (!ValidateSymbol(tySym))
+                return base.VisitImplicitArrayCreationExpression(node);
 
-            var tySpec = (ArrayTypeSyntax)
-                SyntaxFactory.ParseTypeName(
+            var tySpec = (ArrayTypeSyntax)SyntaxFactory.ParseTypeName(
                     tySym.ToMinimalDisplayString(_semaModel, node.SpanStart));
 
             return VisitCreationExpression(
@@ -143,10 +147,8 @@ namespace SharpSyntaxRewriter.Rewriters
         public override SyntaxNode VisitImplicitStackAllocArrayCreationExpression(ImplicitStackAllocArrayCreationExpressionSyntax node)
         {
             var tySym = _semaModel.GetTypeInfo(node).Type;
-            if (tySym == null)
-            {
+            if (!ValidateSymbol(tySym))
                 return base.VisitImplicitStackAllocArrayCreationExpression(node);
-            }
 
             return VisitCreationExpression(
                         node,
