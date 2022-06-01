@@ -150,6 +150,7 @@ namespace SharpSyntaxRewriter.Rewriters
             // This is a weirdly named AST node, see: https://github.com/dotnet/roslyn/issues/35809
         {
             var foreachInfo = _semaModel.GetForEachStatementInfo(node);
+
             var colTySym = foreachInfo.GetEnumeratorMethod.ContainingType;
             if (!ValidateSymbol(colTySym))
                 return node;
