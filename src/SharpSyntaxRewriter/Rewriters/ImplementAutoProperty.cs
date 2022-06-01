@@ -289,8 +289,7 @@ namespace SharpSyntaxRewriter.Rewriters
             var node_P = node.WithRight((ExpressionSyntax)node.Right.Accept(this));
 
             var lhsSym = _semaModel.GetSymbolInfo(node.Left).Symbol;
-            if (ValidateSymbol(lhsSym)
-                    && lhsSym is IPropertySymbol propSym
+            if (lhsSym is IPropertySymbol propSym
                     && propSym.IsReadOnly
                     && propSym.DeclaringSyntaxReferences.Any())
             {

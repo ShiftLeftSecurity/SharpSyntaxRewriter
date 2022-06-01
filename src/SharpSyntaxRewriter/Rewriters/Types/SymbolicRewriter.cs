@@ -1,8 +1,6 @@
 ﻿// Copyright 2021 ShiftLeft, Inc.
 // Author: Leandro T. C. Melo
 
-#define DEBUG_INACCURATE_REWRITES
-
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -40,6 +38,11 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 
         protected void SymbolIsInvalid(ISymbol sym)
         {
+            __wasRewriteAcurate = false;
+
+            if (!__reliableSemaModel)
+                return;
+
             StringBuilder sb = new("invalid symbol");
             if (sym != null)
             {
@@ -56,14 +59,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
                     sb.Append(loc.SourceSpan);
                 }
             }
-
-#if DEBUG_INACCURATE_REWRITES
-            Console.WriteLine(sb.ToString());
-#endif
-
-            __wasRewriteAcurate = false;
-            if (__reliableSemaModel)
-                throw new UnexpectedInaccurateRewriteException(sb.ToString());
+            throw new UnexpectedInaccurateRewriteException(sb.ToString());
         }
 
         protected bool ValidateSymbol(ISymbol sym)
