@@ -41,17 +41,20 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         protected void SymbolIsInvalid(ISymbol sym)
         {
             StringBuilder sb = new("invalid symbol");
-            foreach (var loc in sym?.Locations)
+            if (sym != null)
             {
-                if (loc.IsInMetadata || !loc.IsInSource)
+                foreach (var loc in sym.Locations)
                 {
-                    sb.Append($" (metadata or unknown: {loc.Kind})");
-                    continue;
-                }
+                    if (loc.IsInMetadata || !loc.IsInSource)
+                    {
+                        sb.Append($" (metadata or unknown: {loc.Kind})");
+                        continue;
+                    }
 
-                sb.Append(loc.SourceTree.FilePath);
-                sb.Append(' ');
-                sb.Append(loc.SourceSpan);
+                    sb.Append(loc.SourceTree.FilePath);
+                    sb.Append(' ');
+                    sb.Append(loc.SourceSpan);
+                }
             }
 
 #if DEBUG_INACCURATE_REWRITES

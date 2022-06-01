@@ -1042,5 +1042,31 @@ public class C
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImposeThisPrefixWithNameof()
+        {
+            var original = @"
+public class Destroyer
+{
+    public void f()
+    {
+        var x = nameof(f);
+    }
+}
+";
+
+            var expected = @"
+public class Destroyer
+{
+    public void f()
+    {
+        var x = nameof(f);
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
