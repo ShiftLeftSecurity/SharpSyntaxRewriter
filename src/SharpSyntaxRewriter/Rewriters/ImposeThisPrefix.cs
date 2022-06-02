@@ -160,7 +160,7 @@ namespace SharpSyntaxRewriter.Rewriters
                 return node;
 
             var sym = _semaModel.GetSymbolInfo(node).Symbol;
-            if (!ValidateSymbol(sym) || sym.IsStatic)
+            if (sym == null || sym.IsStatic)
                 return node;
 
             switch (sym)

@@ -1,8 +1,6 @@
 ﻿// Copyright 2021 ShiftLeft, Inc.
 // Author: Leandro T. C. Melo
 
-#define DEBUG_INACCURATE_REWRITES
-
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -40,27 +38,28 @@ namespace SharpSyntaxRewriter.Rewriters.Types
 
         protected void SymbolIsInvalid(ISymbol sym)
         {
-            StringBuilder sb = new("invalid symbol");
-            foreach (var loc in sym?.Locations)
-            {
-                if (loc.IsInMetadata || !loc.IsInSource)
-                {
-                    sb.Append($" (metadata or unknown: {loc.Kind})");
-                    continue;
-                }
-
-                sb.Append(loc.SourceTree.FilePath);
-                sb.Append(' ');
-                sb.Append(loc.SourceSpan);
-            }
-
-#if DEBUG_INACCURATE_REWRITES
-            Console.WriteLine(sb.ToString());
-#endif
-
             __wasRewriteAcurate = false;
-            if (__reliableSemaModel)
-                throw new UnexpectedInaccurateRewriteException(sb.ToString());
+
+            if (!__reliableSemaModel)
+                return;
+
+            StringBuilder sb = new("invalid symbol");
+            if (sym != null)
+            {
+                foreach (var loc in sym.Locations)
+                {
+                    if (loc.IsInMetadata || !loc.IsInSource)
+                    {
+                        sb.Append($" (metadata or unknown: {loc.Kind})");
+                        continue;
+                    }
+
+                    sb.Append(loc.SourceTree.FilePath);
+                    sb.Append(' ');
+                    sb.Append(loc.SourceSpan);
+                }
+            }
+            throw new UnexpectedInaccurateRewriteException(sb.ToString());
         }
 
         protected bool ValidateSymbol(ISymbol sym)

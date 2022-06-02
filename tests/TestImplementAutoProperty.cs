@@ -845,5 +845,33 @@ public readonly struct ImageDimensions
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyDontTweakPropertyInLHSOfAssignment()
+        {
+            var original = @"
+public class A
+{
+    public A()
+    {
+        int[] aaa = new int[] { 1 };
+        aaa[0] = 0;
+    }
+}
+";
+
+            var expected = @"
+public class A
+{
+    public A()
+    {
+        int[] aaa = new int[] { 1 };
+        aaa[0] = 0;
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
