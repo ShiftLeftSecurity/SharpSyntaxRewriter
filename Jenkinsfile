@@ -1,6 +1,6 @@
 #!groovy
 pipeline {
-    agent { label 'ubuntu-ci' }
+    agent { label 'dotnet-windows' }
     environment {
         REPO_NAME = "github.com/ShiftLeftSecurity/SharpSyntaxRewriter"
         GITHUB_KEY = '4b3482c3-735f-4c31-8d1b-d8d3bd889348'
