@@ -10,26 +10,27 @@ pipeline {
         disableConcurrentBuilds()
     }
     parameters { string(name: 'LIB_TAG', defaultValue: '', description: 'Please enter LIB_TAG value') }
-    stage('getSrc') {
-        steps {
-            script {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/master"]],
-                    extensions: [[
-                        $class: 'PathRestriction',
-                        excludedRegions: '',
-                        includedRegions: ''
-                    ]],
-                    userRemoteConfigs: [[
-                        credentialsId: '4b3482c3-735f-4c31-8d1b-d8d3bd889348',
-                        url: "ssh://git@${env.REPO_NAME}"
-                    ]]
-                ])
+    stages {
+        stage('getSrc') {
+            steps {
+                script {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/master"]],
+                        extensions: [[
+                            $class: 'PathRestriction',
+                            excludedRegions: '',
+                            includedRegions: ''
+                        ]],
+                        userRemoteConfigs: [[
+                            credentialsId: '4b3482c3-735f-4c31-8d1b-d8d3bd889348',
+                            url: "ssh://git@${env.REPO_NAME}"
+                        ]]
+                    ])
+                }
             }
         }
-    }
-    stage('push-iqt-zip') {
+        stage('push-nugget') {
             steps {
                 script {
                     sh "git clone git@github.com:ShiftLeftSecurity/SharpSyntaxRewriter.git"
@@ -40,6 +41,7 @@ pipeline {
                 }
             }
         }
+    }
     post {
         failure {
             notifyFailure()
