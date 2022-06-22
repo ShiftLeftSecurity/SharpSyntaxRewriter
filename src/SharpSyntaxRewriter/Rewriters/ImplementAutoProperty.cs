@@ -299,31 +299,10 @@ namespace SharpSyntaxRewriter.Rewriters
             var node_P = node.WithRight((ExpressionSyntax)node.Right.Accept(this));
 
             var lhsSym = _semaModel.GetSymbolInfo(node.Left).Symbol;
-
-            if (lhsSym is IPropertySymbol propSym
-                    && propSym.IsReadOnly
-                    && propSym.DeclaringSyntaxReferences.Any())
-            {
-                return
-                    node_P.WithLeft(
-                        SyntaxFactory.IdentifierName(
-                            SynthesizedFieldName(propSym.Name))
-                        .WithTriviaFrom(node.Left));
-            }
-
-            return node_P;
-        }
-
-        private ExpressionSyntax __ChooseBetweenPropertyOrFieldExpression(
-                ExpressionSyntax propExpr,
-                ISymbol sym)
-        {
-            return (sym is IPropertySymbol propSym
-                        && propSym.IsReadOnly
-                        && propSym.DeclaringSyntaxReferences.Any())
-                   ? SyntaxFactory.IdentifierName(SynthesizedFieldName(propSym.Name))
-                                  .WithTriviaFrom(propExpr)
-                   : propExpr;
+            var chosenExpr = __ChooseBetweenPropertyOrFieldExpression(node.Left, lhsSym);
+            return chosenExpr == node.Left
+                    ? node_P
+                    : node_P.WithLeft(chosenExpr);
         }
 
         public override SyntaxNode VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
@@ -352,6 +331,18 @@ namespace SharpSyntaxRewriter.Rewriters
             return choseExpr == node.Operand
                     ? node_P
                     : node_P.WithOperand(choseExpr);
+        }
+
+        private ExpressionSyntax __ChooseBetweenPropertyOrFieldExpression(
+        ExpressionSyntax propExpr,
+        ISymbol sym)
+        {
+            return (sym is IPropertySymbol propSym
+                        && propSym.IsReadOnly
+                        && propSym.DeclaringSyntaxReferences.Any())
+                   ? SyntaxFactory.IdentifierName(SynthesizedFieldName(propSym.Name))
+                                  .WithTriviaFrom(propExpr)
+                   : propExpr;
         }
 
         public static string SynthesizedFieldName(string propName)
