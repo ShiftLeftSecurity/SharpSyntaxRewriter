@@ -873,5 +873,35 @@ public class A
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void Test_TEMP()
+        {
+            var original = @"
+public class PagedList
+{
+    public int TotalPages { get; }
+
+    public PagedList()
+    {
+        TotalPages++;
+    }
+}
+";
+
+            var expected = @"
+public class PagedList
+{
+    public int TotalPages { get { return ____LT____TotalPages____GT____k_BackingField; } } public int ____LT____TotalPages____GT____k_BackingField;
+
+    public PagedList()
+    {
+        ____LT____TotalPages____GT____k_BackingField++;
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
