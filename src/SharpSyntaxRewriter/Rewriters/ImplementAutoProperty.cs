@@ -281,9 +281,20 @@ namespace SharpSyntaxRewriter.Rewriters
         /*
          * See https://github.com/dotnet/csharplang/issues/2468 for the reason of this visit.
          */
+        private bool __withinCtor;
+
+        public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
+        {
+            __withinCtor = true;
+            var node_P = base.VisitConstructorDeclaration(node);
+            __withinCtor = false;
+
+            return node_P;
+        }
+
         public override SyntaxNode VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            if (!node.Ancestors().OfType<ConstructorDeclarationSyntax>().Any())
+            if (!__withinCtor)
                 return node;
 
             var node_P = node.WithRight((ExpressionSyntax)node.Right.Accept(this));
