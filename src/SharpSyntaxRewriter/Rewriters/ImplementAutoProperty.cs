@@ -281,26 +281,68 @@ namespace SharpSyntaxRewriter.Rewriters
         /*
          * See https://github.com/dotnet/csharplang/issues/2468 for the reason of this visit.
          */
+        private bool __withinCtor;
+        public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
+        {
+            __withinCtor = true;
+            var node_P = base.VisitConstructorDeclaration(node);
+            __withinCtor = false;
+
+            return node_P;
+        }
+
         public override SyntaxNode VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            if (!node.Ancestors().OfType<ConstructorDeclarationSyntax>().Any())
+            if (!__withinCtor)
                 return node;
 
             var node_P = node.WithRight((ExpressionSyntax)node.Right.Accept(this));
 
             var lhsSym = _semaModel.GetSymbolInfo(node.Left).Symbol;
-            if (lhsSym is IPropertySymbol propSym
-                    && propSym.IsReadOnly
-                    && propSym.DeclaringSyntaxReferences.Any())
-            {
-                return
-                    node_P.WithLeft(
-                        SyntaxFactory.IdentifierName(
-                            SynthesizedFieldName(propSym.Name))
-                        .WithTriviaFrom(node.Left));
-            }
+            var chosenExpr = __ChooseBetweenPropertyOrFieldExpression(node.Left, lhsSym);
+            return chosenExpr == node.Left
+                    ? node_P
+                    : node_P.WithLeft(chosenExpr);
+        }
 
-            return node_P;
+        public override SyntaxNode VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
+        {
+            if (!__withinCtor)
+                return node;
+
+            var node_P = node.WithOperand((ExpressionSyntax)node.Operand.Accept(this));
+
+            var operandSym = _semaModel.GetSymbolInfo(node.Operand).Symbol;
+            var chosenExpr = __ChooseBetweenPropertyOrFieldExpression(node.Operand, operandSym);
+            return chosenExpr == node.Operand
+                    ? node_P
+                    : node_P.WithOperand(chosenExpr);
+        }
+
+        public override SyntaxNode VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
+        {
+            if (!__withinCtor)
+                return node;
+
+            var node_P = node.WithOperand((ExpressionSyntax)node.Operand.Accept(this));
+
+            var operandSym = _semaModel.GetSymbolInfo(node.Operand).Symbol;
+            var choseExpr = __ChooseBetweenPropertyOrFieldExpression(node.Operand, operandSym);
+            return choseExpr == node.Operand
+                    ? node_P
+                    : node_P.WithOperand(choseExpr);
+        }
+
+        private ExpressionSyntax __ChooseBetweenPropertyOrFieldExpression(
+        ExpressionSyntax propExpr,
+        ISymbol sym)
+        {
+            return (sym is IPropertySymbol propSym
+                        && propSym.IsReadOnly
+                        && propSym.DeclaringSyntaxReferences.Any())
+                   ? SyntaxFactory.IdentifierName(SynthesizedFieldName(propSym.Name))
+                                  .WithTriviaFrom(propExpr)
+                   : propExpr;
         }
 
         public static string SynthesizedFieldName(string propName)
