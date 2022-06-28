@@ -933,5 +933,53 @@ public class PagedList
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestImplementAutoPropertyPropertyWithOnlyGetAccessorFromOtherClass()
+        {
+            var original = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Name
+{
+    public bool IsEmpty => false;
+}
+
+public class PagedList
+{
+    public PagedList()
+    {
+        Name nnn = null;
+        var eee = nnn.IsEmpty;
+        IEnumerable<Name> ParseQuery(string qqq) => qqq.Split('-').Select(aaa => new Name()).Where(aaa => !aaa.IsEmpty);
+    }
+}
+";
+
+            var expected = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Name
+{
+    public bool IsEmpty => false;
+}
+
+public class PagedList
+{
+    public PagedList()
+    {
+        Name nnn = null;
+        var eee = nnn.IsEmpty;
+        IEnumerable<Name> ParseQuery(string qqq) => qqq.Split('-').Select(aaa => new Name()).Where(aaa => !aaa.IsEmpty);
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
