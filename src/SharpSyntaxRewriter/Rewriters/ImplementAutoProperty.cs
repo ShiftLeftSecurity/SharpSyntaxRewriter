@@ -281,19 +281,19 @@ namespace SharpSyntaxRewriter.Rewriters
         /*
          * See https://github.com/dotnet/csharplang/issues/2468 for the reason of this visit.
          */
-        private bool __withinCtor;
+        private ITypeSymbol __tySym;
         public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
-            __withinCtor = true;
+            __tySym = _semaModel.GetDeclaredSymbol(node)?.ContainingType;
             var node_P = base.VisitConstructorDeclaration(node);
-            __withinCtor = false;
+            __tySym = null;
 
             return node_P;
         }
 
         public override SyntaxNode VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            if (!__withinCtor)
+            if (__tySym == null)
                 return node;
 
             var node_P = node.WithRight((ExpressionSyntax)node.Right.Accept(this));
@@ -307,7 +307,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
         {
-            if (!__withinCtor)
+            if (__tySym == null)
                 return node;
 
             var node_P = node.WithOperand((ExpressionSyntax)node.Operand.Accept(this));
@@ -321,7 +321,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
         {
-            if (!__withinCtor)
+            if (__tySym == null)
                 return node;
 
             var node_P = node.WithOperand((ExpressionSyntax)node.Operand.Accept(this));
@@ -334,10 +334,13 @@ namespace SharpSyntaxRewriter.Rewriters
         }
 
         private ExpressionSyntax __ChooseBetweenPropertyOrFieldExpression(
-        ExpressionSyntax propExpr,
-        ISymbol sym)
+            ExpressionSyntax propExpr,
+            ISymbol sym)
         {
+            Debug.Assert(__tySym != null);
+
             return (sym is IPropertySymbol propSym
+                        && SymbolEqualityComparer.Default.Equals(propSym.ContainingType, __tySym)
                         && propSym.IsReadOnly
                         && propSym.DeclaringSyntaxReferences.Any())
                    ? SyntaxFactory.IdentifierName(SynthesizedFieldName(propSym.Name))
