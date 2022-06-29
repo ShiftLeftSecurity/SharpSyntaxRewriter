@@ -102,9 +102,28 @@ namespace SharpSyntaxRewriter.Rewriters
             if (!conv.Exists)
             {
                 if (convTySym.SpecialType == SpecialType.System_String)
+                {
                     callExpr = Invocation(ResultTypeName.String, fmtArgs);
+                }
                 else
-                    callExpr = Invocation(ResultTypeName.FormattableString, fmtArgs);
+                {
+                    ResultTypeName resTyName = ResultTypeName.FormattableString;
+
+                    // Account for .NET6's custom string interpolation handlers.
+                    // https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/interpolated-string-handler#implement-the-handler-pattern
+                    foreach (var attr in convTySym.GetAttributes())
+                    {
+                        if (attr.AttributeClass != null
+                                && (attr.AttributeClass.ToDisplayString() ==
+                                    "System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute"))
+                        {
+                            resTyName = ResultTypeName.String;
+                            break;
+                        }
+                    }
+
+                    callExpr = Invocation(resTyName, fmtArgs);
+                }
             }
             else if (conv.IsIdentity)
             {

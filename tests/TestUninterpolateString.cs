@@ -349,5 +349,41 @@ public class CCC
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestUninterpolateStringChangedBehaviorFromNET5ToNET6()
+        {
+            var original = @"
+using System;
+using System.Text;
+
+public class AAA
+{
+    private readonly int sss;
+    public void fff()
+    {
+        StringBuilder sb = null;
+        sb.AppendLine($""{sss}"");
+    }
+}
+";
+
+            var expected = @"
+using System;
+using System.Text;
+
+public class AAA
+{
+    private readonly int sss;
+    public void fff()
+    {
+        StringBuilder sb = null;
+        sb.AppendLine(string.Format(""{0}"",sss));
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
