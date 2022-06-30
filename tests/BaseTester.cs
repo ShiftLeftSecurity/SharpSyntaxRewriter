@@ -43,7 +43,8 @@ namespace Tests
         protected static void CheckCompilation(Compilation compilation)
         {
             var errorCnt = compilation.GetDiagnostics()
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Where(d => d.Severity == DiagnosticSeverity.Error
+                                && d.Descriptor.Id != "CS1547")
                     .Count();
 
 #if DEBUG_SYNTAX
@@ -56,7 +57,12 @@ namespace Tests
             }
 #endif
 
-            Assert.AreEqual(0, errorCnt);
+            Assert.AreEqual(0, errorCnt, "rewritten syntax tree has errors");
+        }
+
+        protected void CompileAsExecutable()
+        {
+            __compiler.OutputKindCompilationOpt = OutputKind.ConsoleApplication;
         }
     }
 }
