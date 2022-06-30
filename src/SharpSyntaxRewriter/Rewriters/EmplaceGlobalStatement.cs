@@ -38,7 +38,8 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var methDecl =
                 SyntaxFactory.MethodDeclaration(
-                        SyntaxFactory.ParseTypeName("void"),
+                        SyntaxFactory.PredefinedType(
+                            SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
                         "Main")
                     .WithModifiers(
                         SyntaxFactory.TokenList(

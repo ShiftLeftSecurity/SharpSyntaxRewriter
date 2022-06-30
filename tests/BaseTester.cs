@@ -43,8 +43,7 @@ namespace Tests
         protected static void CheckCompilation(Compilation compilation)
         {
             var errorCnt = compilation.GetDiagnostics()
-                    .Where(d => d.Severity == DiagnosticSeverity.Error
-                                && d.Descriptor.Id != "CS1547")
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
                     .Count();
 
 #if DEBUG_SYNTAX
