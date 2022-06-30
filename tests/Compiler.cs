@@ -16,8 +16,8 @@ namespace Tests
         {
             return CSharpCompilation.Create("<default-compilation>",
                                             trees.ToList(),
-                                            metadataRefs__,
-                                            compilationOpts__);
+                                            __metadataRefs,
+                                            __compilationOpts);
         }
 
         public (Compilation, List<SyntaxTree>) CompileSourceTexts(
@@ -28,7 +28,7 @@ namespace Tests
             return (CompileSyntaxTrees(trees.ToArray()), trees);
         }
 
-        private CSharpParseOptions parseOpts__
+        private CSharpParseOptions __parseOpts
         {
             get
             {
@@ -38,13 +38,15 @@ namespace Tests
             }
         }
 
-        private CSharpCompilationOptions compilationOpts__
+        public OutputKind OutputKindCompilationOpt { get; set; } = OutputKind.DynamicallyLinkedLibrary;
+
+        private CSharpCompilationOptions __compilationOpts
         {
             get
             {
                 return
                     new CSharpCompilationOptions(
-                        OutputKind.DynamicallyLinkedLibrary,
+                        OutputKindCompilationOpt,
                         allowUnsafe: true,
                         optimizationLevel: OptimizationLevel.Debug,
                         platform: Platform.AnyCpu,
@@ -52,7 +54,7 @@ namespace Tests
             }
         }
 
-        private IEnumerable<MetadataReference> metadataRefs__
+        private IEnumerable<MetadataReference> __metadataRefs
         {
             get
             {

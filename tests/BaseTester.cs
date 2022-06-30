@@ -56,7 +56,12 @@ namespace Tests
             }
 #endif
 
-            Assert.AreEqual(0, errorCnt);
+            Assert.AreEqual(0, errorCnt, "rewritten syntax tree has errors");
+        }
+
+        protected void CompileAsExecutable()
+        {
+            __compiler.OutputKindCompilationOpt = OutputKind.ConsoleApplication;
         }
     }
 }
