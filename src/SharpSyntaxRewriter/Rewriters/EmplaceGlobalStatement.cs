@@ -30,7 +30,7 @@ namespace SharpSyntaxRewriter.Rewriters
             var node_P = (CompilationUnitSyntax)base.VisitCompilationUnit(node);
 
             if (!__stmtsNodes.Any())
-                return node_P;
+                return node;
 
             var lastStmt = __stmtsNodes.Last();
             __stmtsNodes.Remove(lastStmt);
