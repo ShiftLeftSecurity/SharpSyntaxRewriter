@@ -23,7 +23,7 @@ Console.Write(1);
 
             var expected = @"
 using System;
-internal static class __Program__ { private static void Main() { Console.Write(1); } }
+internal static class __Program__ { private static void Main(string[] args) { Console.Write(1); } }
 ";
 
             CompileAsExecutable();
@@ -42,7 +42,7 @@ Console.Write(1);
             var expected = @"
 using System;
 
-internal static class __Program__ { private static void Main() { Console.Write(1); } }
+internal static class __Program__ { private static void Main(string[] args) { Console.Write(1); } }
 ";
 
             CompileAsExecutable();
@@ -63,9 +63,28 @@ Console.Write(2);
             var expected = @"
 using System;
 
-internal static class __Program__ { private static void Main() { Console.Write(1);
+internal static class __Program__ { private static void Main(string[] args) { Console.Write(1);
 
 Console.Write(2); } }
+";
+
+            CompileAsExecutable();
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestEmplaceGlobalStatement4()
+        {
+            var original = @"
+using System;
+
+Console.Write(args);
+";
+
+            var expected = @"
+using System;
+
+internal static class __Program__ { private static void Main(string[] args) { Console.Write(args);  } }
 ";
 
             CompileAsExecutable();

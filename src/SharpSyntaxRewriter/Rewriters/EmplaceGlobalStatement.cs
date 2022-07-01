@@ -45,6 +45,18 @@ namespace SharpSyntaxRewriter.Rewriters
                         SyntaxFactory.TokenList(
                             SyntaxFactory.Token(SyntaxKind.PrivateKeyword),
                             SyntaxFactory.Token(SyntaxKind.StaticKeyword)))
+                    .WithParameterList(
+                        SyntaxFactory.ParameterList(
+                                SyntaxFactory.SeparatedList(
+                                    new List<ParameterSyntax>()
+                                    {
+                                        SyntaxFactory.Parameter(
+                                            SyntaxFactory.List<AttributeListSyntax>(),
+                                            SyntaxFactory.TokenList(),
+                                            SyntaxFactory.ParseTypeName("string[]"),
+                                            SyntaxFactory.Identifier("args"),
+                                            null)
+                                    })))
                     .WithBody(
                         SyntaxFactory.Block(__stmtsNodes));
 
