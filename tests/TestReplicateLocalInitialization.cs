@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpSyntaxRewriter.Rewriters;
+
 namespace Tests
 {
     [TestClass]
@@ -2620,6 +2621,5 @@ class Aaa
 ";
             TestRewrite_LinePreserve(original, expected);
         }
-
     }
 }
