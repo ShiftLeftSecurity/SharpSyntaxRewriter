@@ -81,6 +81,28 @@ namespace SharpSyntaxRewriter.Rewriters
                         node.Expression,
                         declPatt.Type);
         }
+
+        public override SyntaxNode VisitSwitchExpression(SwitchExpressionSyntax node)
+        {
+            __exprs.Push(node.GoverningExpression);
+            var node_P = (SwitchExpressionSyntax)base.VisitSwitchExpression(node);
+            __exprs.Pop();
+
+            return node_P;
+        }
+
+        public override SyntaxNode VisitSwitchExpressionArm(SwitchExpressionArmSyntax node)
+        {
+            if (node.Pattern is not DeclarationPatternSyntax declPatt
+                    || declPatt.Designation is not SingleVariableDesignationSyntax)
+            {
+                return node;
+            }
+
+            var node_P = (SwitchExpressionArmSyntax)base.VisitSwitchExpressionArm(node);
+
+            return node_P.WithPattern(SyntaxFactory.ConstantPattern(declPatt.Type));
+        }
     }
 }
 

@@ -385,6 +385,120 @@ class CCC
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern12()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime ddd => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         DateTime ddd = default(DateTime); if(ppp is DateTime)ddd = (DateTime)ppp; return ppp switch
+         {
+             DateTime => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern13()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern14()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime _ => 1,
+             null => 0,
+         };
+     }
+ }
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime _ => 1,
+             null => 0,
+         };
+     }
+ }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
 
