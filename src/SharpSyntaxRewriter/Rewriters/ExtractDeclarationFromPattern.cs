@@ -88,7 +88,7 @@ namespace SharpSyntaxRewriter.Rewriters
         {
             /*
              * A `switch' expression may contain `switch' "arms" with declaration patterns
-             * whose declared name are the same; but we don't want to replicate these declarations.
+             * whose name are the same; but we don't want to replicate these declarations.
              */
             __declaredNames.Push(new HashSet<string>());
 
