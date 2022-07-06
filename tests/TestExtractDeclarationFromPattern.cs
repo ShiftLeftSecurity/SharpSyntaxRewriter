@@ -36,7 +36,7 @@ class CCC
 {
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; var vvv = ppp is DateTime;
+        DateTime ddd = (DateTime)ppp; var vvv = ppp is DateTime;
     }
 }
 ";
@@ -52,13 +52,13 @@ using System;
 
 class CCC
 {
-     public int Data;
+     public DateTime? Data;
 
      private void FFF(object ppp)
      {
          var vvv = new CCC
          {
-             Data = ppp is DateTime ddd ? 0 : 1
+             Data = ppp is DateTime ddd ? ddd : null
          };
      }
  }
@@ -69,13 +69,13 @@ using System;
 
 class CCC
 {
-    public int Data;
+    public DateTime? Data;
 
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; var vvv = new CCC
+        DateTime ddd = (DateTime)ppp; var vvv = new CCC
         {
-            Data = ppp is DateTime ? 0 : 1
+            Data = ppp is DateTime ? ddd : null
         };
     }
 }
@@ -109,7 +109,7 @@ class CCC
     private void GGG(DateTime ppp) {}
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; if (ppp is DateTime)
+        DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
             GGG(ddd);
     }
 }
@@ -145,7 +145,7 @@ class CCC
     private void FFF(object ppp)
     {
         if (true)
-        {   DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; if (ppp is DateTime)
+        {   DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
             GGG(ddd);   }
     }
 }
@@ -184,7 +184,7 @@ class CCC
     {
         if (true)
         {
-            DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; if (ppp is DateTime)
+            DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
             GGG(ddd);
         }
     }
@@ -219,7 +219,7 @@ class CCC
     private void GGG(DateTime ppp) {}
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; if (true && ppp is DateTime)
+        DateTime ddd = (DateTime)ppp; if (true && ppp is DateTime)
             GGG(ddd);
     }
 }
@@ -254,7 +254,7 @@ class CCC
     private int GGG(DateTime ppp) { return 0; }
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; Data = ppp is DateTime ? GGG(ddd) : 1;
+        DateTime ddd = (DateTime)ppp; Data = ppp is DateTime ? GGG(ddd) : 1;
     }
 }
 ";
@@ -291,7 +291,7 @@ class CCC
     private int GGG(DateTime ppp) { return 0; }
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; var vvv = new CCC
+        DateTime ddd = (DateTime)ppp; var vvv = new CCC
         {
             Data = ppp is DateTime ? GGG(ddd) : 1
         };
@@ -378,7 +378,7 @@ class CCC
 
     private void FFF(object ppp)
     {
-        DateTime ddd = default(DateTime); if (ppp is DateTime) ddd = (DateTime)ppp; GGG(ppp is DateTime ? ddd : null);
+        DateTime ddd = (DateTime)ppp; GGG(ppp is DateTime ? ddd : null);
     }
 }
 ";
@@ -412,7 +412,7 @@ class CCC
 {
      private int FFF(object ppp)
      {
-         DateTime ddd = default(DateTime); if(ppp is DateTime)ddd = (DateTime)ppp; return ppp switch
+         DateTime ddd = (DateTime)ppp; return ppp switch
          {
              DateTime => 1,
              _ => 0,
@@ -495,6 +495,130 @@ class CCC
          };
      }
  }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern15()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime ddd => 1,
+             string sss => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         DateTime ddd = (DateTime)ppp; string sss = (string)ppp; return ppp switch
+         {
+             DateTime => 1,
+             string => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern16()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime uuu => 1,
+             string uuu => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+     private int FFF(object ppp)
+     {
+         return ppp switch
+         {
+             DateTime => 1,
+             string => 1,
+             _ => 0,
+         };
+     }
+ }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPattern17()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+    public DateTime? DDD;
+    public string SSS;
+
+    private void FFF(object ppp)
+    {
+        var vvv = new CCC
+        {
+            DDD = ppp is DateTime ddd ? ddd : null,
+            SSS = ppp is string sss ? sss : "" ""
+        };
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+    public DateTime? DDD;
+    public string SSS;
+
+    private void FFF(object ppp)
+    {
+        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; var vvv = new CCC
+        {
+            DDD = ppp is DateTime ? ddd : null,
+            SSS = ppp is string ? sss : "" ""
+        };
+    }
+}
 ";
 
             TestRewrite_LinePreserve(original, expected);

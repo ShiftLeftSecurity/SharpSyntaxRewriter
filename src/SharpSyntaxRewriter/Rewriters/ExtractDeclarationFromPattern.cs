@@ -28,6 +28,9 @@ namespace SharpSyntaxRewriter.Rewriters
             Debug.Assert(node.Designation is SingleVariableDesignationSyntax);
             var varDesig = (SingleVariableDesignationSyntax)node.Designation;
 
+            Debug.Assert(__exprs.Any());
+            var expr = __exprs.Peek();
+
             var declStmt =
                 SyntaxFactory.LocalDeclarationStatement(
                     SyntaxFactory.VariableDeclaration(
@@ -37,27 +40,11 @@ namespace SharpSyntaxRewriter.Rewriters
                                 varDesig.Identifier.WithoutTrivia(),
                                 null,
                                 SyntaxFactory.EqualsValueClause(
-                                    SyntaxFactory.DefaultExpression(node.Type))))));
-
-            Debug.Assert(__exprs.Any());
-            var expr = __exprs.Peek();
-
-            var ifStmt =
-                SyntaxFactory.IfStatement(
-                    SyntaxFactory.BinaryExpression(
-                        SyntaxKind.IsExpression,
-                        expr,
-                        node.Type),
-                    SyntaxFactory.ExpressionStatement(
-                        SyntaxFactory.AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            SyntaxFactory.IdentifierName(varDesig.Identifier),
-                            SyntaxFactory.CastExpression(
-                                node.Type,
-                                expr))));
+                                    SyntaxFactory.CastExpression(
+                                        node.Type,
+                                        expr))))));
 
             _ctx.Peek().Add(declStmt);
-            _ctx.Peek().Add(ifStmt);
 
             return node;
         }
