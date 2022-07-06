@@ -412,7 +412,7 @@ class CCC
 {
      private int FFF(object ppp)
      {
-         DateTime ddd = (DateTime)ppp; return ppp switch
+         object ddd = (object)ppp; return ppp switch
          {
              DateTime => 1,
              _ => 0,
@@ -531,10 +531,10 @@ class CCC
     private int SSS(string sss) { return 0; }
     private int FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; return ppp switch
+        object ddd = (object)ppp; object sss = (object)ppp; return ppp switch
         {
-            DateTime => DDD(ddd),
-            string => SSS(sss),
+            DateTime => DDD((DateTime)ddd),
+            string => SSS((string)sss),
             _ => 0,
         };
     }
@@ -575,10 +575,10 @@ class CCC
     private int SSS(string sss) { return 0; }
     private int FFF(object ppp)
     {
-        return ppp switch
+        object uuu = (object)ppp; return ppp switch
         {
-            DateTime => DDD(uuu),
-            string => SSS(uuu),
+            DateTime => DDD((DateTime)uuu),
+            string => SSS((string)uuu),
             _ => 0,
         };
     }
