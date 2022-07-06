@@ -508,15 +508,17 @@ using System;
 
 class CCC
 {
-     private int FFF(object ppp)
-     {
-         return ppp switch
-         {
-             DateTime ddd => 1,
-             string sss => 1,
-             _ => 0,
-         };
-     }
+    private int DDD(DateTime ddd) { return 0; }
+    private int SSS(string sss) { return 0; }
+    private int FFF(object ppp)
+    {
+        return ppp switch
+        {
+            DateTime ddd => DDD(ddd),
+            string sss => SSS(sss),
+            _ => 0,
+        };
+    }
  }
 ";
 
@@ -525,15 +527,17 @@ using System;
 
 class CCC
 {
-     private int FFF(object ppp)
-     {
-         DateTime ddd = (DateTime)ppp; string sss = (string)ppp; return ppp switch
-         {
-             DateTime => 1,
-             string => 1,
-             _ => 0,
-         };
-     }
+    private int DDD(DateTime ddd) { return 0; }
+    private int SSS(string sss) { return 0; }
+    private int FFF(object ppp)
+    {
+        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; return ppp switch
+        {
+            DateTime => DDD(ddd),
+            string => SSS(sss),
+            _ => 0,
+        };
+    }
  }
 ";
 
@@ -548,15 +552,17 @@ using System;
 
 class CCC
 {
-     private int FFF(object ppp)
-     {
-         return ppp switch
-         {
-             DateTime uuu => 1,
-             string uuu => 1,
-             _ => 0,
-         };
-     }
+    private int DDD(DateTime ddd) { return 0; }
+    private int SSS(string sss) { return 0; }
+    private int FFF(object ppp)
+    {
+        return ppp switch
+        {
+            DateTime uuu => DDD(uuu),
+            string uuu => SSS(uuu),
+            _ => 0,
+        };
+    }
  }
 ";
 
@@ -565,15 +571,17 @@ using System;
 
 class CCC
 {
-     private int FFF(object ppp)
-     {
-         return ppp switch
-         {
-             DateTime => 1,
-             string => 1,
-             _ => 0,
-         };
-     }
+    private int DDD(DateTime ddd) { return 0; }
+    private int SSS(string sss) { return 0; }
+    private int FFF(object ppp)
+    {
+        return ppp switch
+        {
+            DateTime => DDD(uuu),
+            string => SSS(uuu),
+            _ => 0,
+        };
+    }
  }
 ";
 
