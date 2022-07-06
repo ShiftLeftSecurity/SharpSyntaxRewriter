@@ -15,7 +15,7 @@ namespace Tests
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern1()
+        public void TestExtractDeclarationFromPatternAsVarInitializer()
         {
             var original = @"
 using System;
@@ -45,7 +45,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern2()
+        public void TestExtractDeclarationFromPatternAsObjectInitializer()
         {
             var original = @"
 using System;
@@ -85,7 +85,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern3()
+        public void TestExtractDeclarationFromPatternInIfStatement()
         {
             var original = @"
 using System;
@@ -119,7 +119,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern4()
+        public void TestExtractDeclarationFromPatternInIfStatementNested()
         {
             var original = @"
 using System;
@@ -155,7 +155,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern5()
+        public void TestExtractDeclarationFromPatternInIfStatementNestedWithBlock()
         {
             var original = @"
 using System;
@@ -195,7 +195,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern6()
+        public void TestExtractDeclarationFromPatternInIfStatmentWithLogicalAND()
         {
             var original = @"
 using System;
@@ -229,7 +229,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern7()
+        public void TestExtractDeclarationFromPatternInConditionalExpression()
         {
             var original = @"
 using System;
@@ -263,7 +263,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern8()
+        public void TestExtractDeclarationFromPatternInConditionalExpressionWithinObjectInitializer()
         {
             var original = @"
 using System;
@@ -303,7 +303,51 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern9()
+        public void TestExtractDeclarationFromPatternInConditionalExpressionWithinObjectInitializerMultipleProperties()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+    public DateTime? DDD;
+    public string SSS;
+
+    private void FFF(object ppp)
+    {
+        var vvv = new CCC
+        {
+            DDD = ppp is DateTime ddd ? ddd : null,
+            SSS = ppp is string sss ? sss : "" ""
+        };
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+    public DateTime? DDD;
+    public string SSS;
+
+    private void FFF(object ppp)
+    {
+        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; var vvv = new CCC
+        {
+            DDD = ppp is DateTime ? ddd : null,
+            SSS = ppp is string ? sss : "" ""
+        };
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPatternKeepNullPattern()
         {
             var original = @"
 class CCC
@@ -329,7 +373,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern10()
+        public void TestExtractDeclarationFromPatternKeepRangePattern()
         {
             var original = @"
 using System;
@@ -353,7 +397,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern11()
+        public void TestExtractDeclarationFromPatternInConditionalExpressionAsArgument()
         {
             var original = @"
 using System;
@@ -387,7 +431,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern12()
+        public void TestExtractDeclarationFromPatternInSwitchExpression()
         {
             var original = @"
 using System;
@@ -425,7 +469,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern13()
+        public void TestExtractDeclarationFromPatternKeepSwitchArmWithoutDeclarationPattern()
         {
             var original = @"
 using System;
@@ -463,7 +507,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern14()
+        public void TestExtractDeclarationFromPatternKeepUnderscorePattern()
         {
             var original = @"
 using System;
@@ -501,7 +545,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern15()
+        public void TestExtractDeclarationFromPatternInSwitchExpressionWith2Arms()
         {
             var original = @"
 using System;
@@ -545,7 +589,7 @@ class CCC
         }
 
         [TestMethod]
-        public void TestExtractDeclarationFromPattern16()
+        public void TestExtractDeclarationFromPatternInSwitchExpressionWith2ArmsButDeclarationWithSameName()
         {
             var original = @"
 using System;
@@ -583,50 +627,6 @@ class CCC
         };
     }
  }
-";
-
-            TestRewrite_LinePreserve(original, expected);
-        }
-
-        [TestMethod]
-        public void TestExtractDeclarationFromPattern17()
-        {
-            var original = @"
-using System;
-
-class CCC
-{
-    public DateTime? DDD;
-    public string SSS;
-
-    private void FFF(object ppp)
-    {
-        var vvv = new CCC
-        {
-            DDD = ppp is DateTime ddd ? ddd : null,
-            SSS = ppp is string sss ? sss : "" ""
-        };
-    }
-}
-";
-
-            var expected = @"
-using System;
-
-class CCC
-{
-    public DateTime? DDD;
-    public string SSS;
-
-    private void FFF(object ppp)
-    {
-        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; var vvv = new CCC
-        {
-            DDD = ppp is DateTime ? ddd : null,
-            SSS = ppp is string ? sss : "" ""
-        };
-    }
-}
 ";
 
             TestRewrite_LinePreserve(original, expected);
