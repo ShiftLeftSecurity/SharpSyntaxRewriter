@@ -24,7 +24,7 @@ namespace SharpSyntaxRewriter.Rewriters
         }
 
         private readonly Stack<ExpressionSyntax> __exprs = new();
-        private readonly Stack<DeclarationPatternSyntax> __patterns = new();
+        private readonly Stack<PatternSyntax> __patterns = new();
         private readonly Stack<HashSet<string>> __declaredNames = new();
 
         public override SyntaxNode VisitDeclarationPattern(DeclarationPatternSyntax node)
@@ -103,17 +103,36 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitSwitchExpressionArm(SwitchExpressionArmSyntax node)
         {
-            if (node.Pattern is not DeclarationPatternSyntax declPatt
-                    || declPatt.Designation is not SingleVariableDesignationSyntax)
+            PatternSyntax patt_P;
+            switch (node.Pattern)
             {
-                return node;
+                case DeclarationPatternSyntax declPatt:
+                    if (declPatt.Designation is not SingleVariableDesignationSyntax)
+                        return node;
+                    patt_P =
+                        SyntaxFactory.ConstantPattern(declPatt.Type);
+                    break;
+
+                case RecursivePatternSyntax recPatt:
+                    if (recPatt.Designation is not SingleVariableDesignationSyntax)
+                        return node;
+                    patt_P =
+                        SyntaxFactory.RecursivePattern(
+                            recPatt.Type,
+                            recPatt.PositionalPatternClause,
+                            recPatt.PropertyPatternClause,
+                            null);
+                    break;
+
+                default:
+                    return node;
             }
 
-            __patterns.Push(declPatt);
+            __patterns.Push(node.Pattern);
             var node_P = (SwitchExpressionArmSyntax)base.VisitSwitchExpressionArm(node);
             __patterns.Pop();
 
-            return node_P.WithPattern(SyntaxFactory.ConstantPattern(declPatt.Type));
+            return node_P.WithPattern(patt_P);
         }
 
         public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
@@ -123,13 +142,37 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var pattern = __patterns.Peek();
 
-            Debug.Assert(pattern.Designation is SingleVariableDesignationSyntax);
-            var varDesign = (SingleVariableDesignationSyntax)pattern.Designation;
+            Debug.Assert(pattern is DeclarationPatternSyntax
+                            || pattern is RecursivePatternSyntax);
 
-            if (varDesign.Identifier.Text != node.Identifier.Text)
+            SingleVariableDesignationSyntax varDesig;
+            TypeSyntax pattType;
+            switch (pattern)
+            {
+                case DeclarationPatternSyntax declPatt:
+                    if (declPatt.Designation is not SingleVariableDesignationSyntax)
+                        return node;
+
+                    varDesig = (SingleVariableDesignationSyntax)declPatt.Designation;
+                    pattType = declPatt.Type;
+                    break;
+
+                case RecursivePatternSyntax recPatt:
+                    if (recPatt.Designation is not SingleVariableDesignationSyntax)
+                        return node;
+
+                    varDesig = (SingleVariableDesignationSyntax)recPatt.Designation;
+                    pattType = recPatt.Type;
+                    break;
+
+                default:
+                    return node;
+            }
+
+            if (varDesig.Identifier.Text != node.Identifier.Text)
                 return node;
 
-            return SyntaxFactory.CastExpression(pattern.Type, node);
+            return SyntaxFactory.CastExpression(pattType, node);
         }
     }
 }
