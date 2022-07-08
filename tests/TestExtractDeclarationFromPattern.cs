@@ -707,6 +707,46 @@ public class CCC
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPatternInSwitchExpressionWithThroughRecursivePatternWithoutDeclaration()
+        {
+            var original = @"
+using System;
+
+public class CCC
+{
+    int FFF(string sss)
+    {
+        return sss switch
+        {
+            { Length: 0 } => 0,
+            { Length: >= 5 } => 0,
+            _ => 0
+        };
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+public class CCC
+{
+    int FFF(string sss)
+    {
+        return sss switch
+        {
+            { Length: 0 } => 0,
+            { Length: >= 5 } => 0,
+            _ => 0
+        };
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
 
