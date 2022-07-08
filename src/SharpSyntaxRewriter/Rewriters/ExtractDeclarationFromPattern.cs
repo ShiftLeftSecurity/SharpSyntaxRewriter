@@ -27,41 +27,59 @@ namespace SharpSyntaxRewriter.Rewriters
         private readonly Stack<PatternSyntax> __patterns = new();
         private readonly Stack<HashSet<string>> __declaredNames = new();
 
-        public override SyntaxNode VisitDeclarationPattern(DeclarationPatternSyntax node)
+        private void __MaybeTurnDesignationIntoDeclaration(
+            SingleVariableDesignationSyntax varDesig,
+            TypeSyntax varDesigTy)
         {
-            Debug.Assert(node.Designation is SingleVariableDesignationSyntax);
-            var varIdent = ((SingleVariableDesignationSyntax)node.Designation).Identifier;
+            var varIdent = varDesig.Identifier;
             var varName = varIdent.Text;
 
             if (__declaredNames.Any())
             {
                 if (__declaredNames.Peek().Contains(varName))
-                    return node;
-
+                    return;
                 __declaredNames.Peek().Add(varName);
             }
 
             Debug.Assert(__exprs.Any());
             var expr = __exprs.Peek();
 
-            var type = __patterns.Any()
+            var varTy = __patterns.Any()
                 ? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword))
-                : node.Type;
+                : varDesigTy;
 
             var declStmt =
                 SyntaxFactory.LocalDeclarationStatement(
                     SyntaxFactory.VariableDeclaration(
-                        type,
+                        varTy,
                         SyntaxFactory.SingletonSeparatedList(
                             SyntaxFactory.VariableDeclarator(
                                 varIdent.WithoutTrivia(),
                                 null,
                                 SyntaxFactory.EqualsValueClause(
                                     SyntaxFactory.CastExpression(
-                                        type,
+                                        varTy,
                                         expr))))));
 
             _ctx.Peek().Add(declStmt);
+        }
+
+        public override SyntaxNode VisitRecursivePattern(RecursivePatternSyntax node)
+        {
+            Debug.Assert(node.Designation is SingleVariableDesignationSyntax);
+            var varDesig = (SingleVariableDesignationSyntax)node.Designation;
+
+            __MaybeTurnDesignationIntoDeclaration(varDesig, node.Type);
+
+            return node;
+        }
+
+        public override SyntaxNode VisitDeclarationPattern(DeclarationPatternSyntax node)
+        {
+            Debug.Assert(node.Designation is SingleVariableDesignationSyntax);
+            var varDesig = (SingleVariableDesignationSyntax)node.Designation;
+
+            __MaybeTurnDesignationIntoDeclaration(varDesig, node.Type);
 
             return node;
         }

@@ -670,6 +670,43 @@ public class CCC
             TestRewrite_LinePreserve(original, expected);
         }
 
+        [TestMethod]
+        public void TestExtractDeclarationFromPatternInSwitchExpressionWith2ArmsThroughRecursivePattern()
+        {
+            var original = @"
+using System;
+
+public class CCC
+{
+    string FFF(object ppp)
+    {
+        return ppp switch
+        {
+            string { Length: >= 5 } sss => sss.Substring(0, 5),
+            string qqq => qqq,
+        };
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+public class CCC
+{
+    string FFF(object ppp)
+    {
+        object sss = (object)ppp; object qqq = (object)ppp; return ppp switch
+        {
+            string { Length: >= 5 } => (string)sss.Substring(0, 5),
+            string => (string)qqq,
+        };
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
 
