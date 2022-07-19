@@ -424,5 +424,35 @@ public class Abc
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        [Ignore] /*
+                  * Depends on a fix in Rolsyn or the C# specification.
+                  * https://github.com/dotnet/roslyn/issues/62747
+                  */
+        public void TestExpandForeachWithSpanTypeInsideAsyncMethod()
+        {
+            var original = @"
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+
+public class CCC
+{
+    public async Task MMM()
+    {
+        IReadOnlyList<string> lll = null;
+        foreach (ReadOnlySpan<char> ccc in lll)
+        {}
+    }
+}
+";
+
+            var expected = @"
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }
