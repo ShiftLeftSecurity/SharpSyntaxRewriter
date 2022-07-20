@@ -27,8 +27,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
         private readonly Stack<List<StatementSyntax>> __ctx = new();
 
-        private SyntaxNode VisitStatements(SyntaxNode node,
-                                           SyntaxList<StatementSyntax> stmts)
+        private SyntaxList<StatementSyntax> VisitStatements(SyntaxList<StatementSyntax> stmts)
         {
             var replaceStmts = false;
             var stmts_P = SyntaxFactory.List<StatementSyntax>();
@@ -58,41 +57,26 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
             }
 
-            return replaceStmts
-                        ? SyntaxFactory.Block(stmts_P)
-                        : node;
+            return replaceStmts ? stmts_P
+                                : stmts;
         }
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
         {
-            var node_P = (BlockSyntax)VisitStatements(node, node.Statements);
+            var stmts_P = VisitStatements(node.Statements);
 
-            return node_P.WithOpenBraceToken(node_P.OpenBraceToken
-                             .WithLeadingTrivia(node.OpenBraceToken.LeadingTrivia)
-                             .WithTrailingTrivia(node.OpenBraceToken.TrailingTrivia))
-                         .WithCloseBraceToken(node_P.CloseBraceToken
-                             .WithLeadingTrivia(node.CloseBraceToken.LeadingTrivia)
-                             .WithTrailingTrivia(node.CloseBraceToken.TrailingTrivia));
+            return stmts_P == node.Statements
+                    ? node
+                    : node.WithStatements(stmts_P);
         }
 
         public override SyntaxNode VisitSwitchSection(SwitchSectionSyntax node)
         {
-            var node_P = VisitStatements(node, node.Statements);
+            var stmts_P = VisitStatements(node.Statements);
 
-            if (node != node_P)
-            {
-                var blockNode = (BlockSyntax)node_P;
-                var lastStmt = blockNode.Statements.Last();
-                blockNode = blockNode.WithStatements(
-                    blockNode.Statements
-                             .Replace(lastStmt, lastStmt.WithoutTrailingTrivia()));
-
-                return node.WithStatements(
-                                SyntaxFactory.List<StatementSyntax>().Add(blockNode))
-                           .WithTriviaFrom(node);
-            }
-
-            return node;
+            return stmts_P == node.Statements
+                    ? node
+                    : node.WithStatements(stmts_P);
         }
 
         private SyntaxNode VisitUnscopedStatement(SyntaxNode node,
