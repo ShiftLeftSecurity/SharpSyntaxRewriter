@@ -2153,7 +2153,7 @@ public class Test
         }
 
         [TestMethod]
-        public void TestReplicateInitializationNoBlockSwitchSection()
+        public void TestReplicateInitializationInsideSwitchSectionWithoutBlock()
         {
             var original = @"
 using System;
@@ -2181,7 +2181,149 @@ public class Abc
         switch (111)
         {
             case 222:
-                { var rrr = new int[] { 99, 88 };rrr[0]=99;rrr[1]=88; }
+                var rrr = new int[] { 99, 88 }; rrr[0] = 99; rrr[1] = 88;
+        }
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestReplicateInitializationInsideSwitchSectionWithBlock()
+        {
+            var original = @"
+using System;
+
+public class Abc
+{
+    public void fff()
+    {
+        switch (111)
+        {
+            case 222:
+            {
+                var rrr = new int[] { 99, 88 };
+            }
+        }
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+public class Abc
+{
+    public void fff()
+    {
+        switch (111)
+        {
+            case 222:
+            {
+                var rrr = new int[] { 99, 88 }; rrr[0] = 99; rrr[1] = 88;
+            }
+        }
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestReplicateLocalInitializationDontTouchSwitchSectionsWhenThereIsNoRewrite()
+        {
+            var original = @"
+public class CCC
+{
+    public void MMM(object ooo)
+    {
+        switch (ooo)
+        {
+            case string:
+                int jjj = 0;
+                if (true) {}
+                break;
+
+           case null:
+               jjj = 0;
+               if (true) {}
+               break;
+        }
+    }
+}
+";
+
+            var expected = @"
+public class CCC
+{
+    public void MMM(object ooo)
+    {
+        switch (ooo)
+        {
+            case string:
+                int jjj = 0;
+                if (true) {}
+                break;
+
+            case null:
+                jjj = 0;
+                if (true) {}
+                break;
+        }
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestReplicateLocalInitializationInsideSwitchSectionStatement()
+        {
+            var original = @"
+public class CCC
+{
+    private int VVV;
+
+    public void MMM(object ooo)
+    {
+        switch (ooo)
+        {
+            case string:
+                int jjj = 0;
+                if (true) { var nnn = new CCC() { VVV = 111 }; }
+                break;
+
+           case null:
+               jjj = 0;
+               if (true) { var mmm = new CCC() { VVV = 222 }; }
+               break;
+        }
+    }
+}
+";
+
+            var expected = @"
+public class CCC
+{
+    private int VVV;
+
+    public void MMM(object ooo)
+    {
+        switch (ooo)
+        {
+            case string:
+                int jjj = 0;
+                if (true) { var nnn = new CCC() { VVV = 111 }; nnn.VVV = 111 ; }
+                break;
+
+            case null:
+                jjj = 0;
+                if (true) { var mmm = new CCC() { VVV = 222 }; mmm.VVV = 222 ; }
+                break;
         }
     }
 }
