@@ -36,13 +36,44 @@ class CCC
 {
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; var vvv = ppp is DateTime;
+        DateTime ddd = (DateTime)(object)ppp; var vvv = ppp is DateTime;
     }
 }
 ";
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestExtractDeclarationFromPatternAsVarInitializerAndTypeParameter()
+        {
+            var original = @"
+using System;
+
+class CCC
+{
+    private void FFF<TTT>(TTT ppp)
+    {
+        var vvv = ppp is DateTime ddd;
+    }
+}
+";
+
+            var expected = @"
+using System;
+
+class CCC
+{
+    private void FFF<TTT>(TTT ppp)
+    {
+        DateTime ddd = (DateTime)(object)ppp; var vvv = ppp is DateTime;
+    }
+}
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
 
         [TestMethod]
         public void TestExtractDeclarationFromPatternAsObjectInitializer()
@@ -73,7 +104,7 @@ class CCC
 
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; var vvv = new CCC
+        DateTime ddd = (DateTime)(object)ppp; var vvv = new CCC
         {
             Data = ppp is DateTime ? ddd : null
         };
@@ -109,7 +140,7 @@ class CCC
     private void GGG(DateTime ppp) {}
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
+        DateTime ddd = (DateTime)(object)ppp; if (ppp is DateTime)
             GGG(ddd);
     }
 }
@@ -145,7 +176,7 @@ class CCC
     private void FFF(object ppp)
     {
         if (true)
-        {   DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
+        {   DateTime ddd = (DateTime)(object)ppp; if (ppp is DateTime)
             GGG(ddd);   }
     }
 }
@@ -184,7 +215,7 @@ class CCC
     {
         if (true)
         {
-            DateTime ddd = (DateTime)ppp; if (ppp is DateTime)
+            DateTime ddd = (DateTime)(object)ppp; if (ppp is DateTime)
             GGG(ddd);
         }
     }
@@ -219,7 +250,7 @@ class CCC
     private void GGG(DateTime ppp) {}
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; if (true && ppp is DateTime)
+        DateTime ddd = (DateTime)(object)ppp; if (true && ppp is DateTime)
             GGG(ddd);
     }
 }
@@ -254,7 +285,7 @@ class CCC
     private int GGG(DateTime ppp) { return 0; }
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; Data = ppp is DateTime ? GGG(ddd) : 1;
+        DateTime ddd = (DateTime)(object)ppp; Data = ppp is DateTime ? GGG(ddd) : 1;
     }
 }
 ";
@@ -291,7 +322,7 @@ class CCC
     private int GGG(DateTime ppp) { return 0; }
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; var vvv = new CCC
+        DateTime ddd = (DateTime)(object)ppp; var vvv = new CCC
         {
             Data = ppp is DateTime ? GGG(ddd) : 1
         };
@@ -334,7 +365,7 @@ class CCC
 
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; string sss = (string)ppp; var vvv = new CCC
+        DateTime ddd = (DateTime)(object)ppp; string sss = (string)(object)ppp; var vvv = new CCC
         {
             DDD = ppp is DateTime ? ddd : null,
             SSS = ppp is string ? sss : "" ""
@@ -422,7 +453,7 @@ class CCC
 
     private void FFF(object ppp)
     {
-        DateTime ddd = (DateTime)ppp; GGG(ppp is DateTime ? ddd : null);
+        DateTime ddd = (DateTime)(object)ppp; GGG(ppp is DateTime ? ddd : null);
     }
 }
 ";
@@ -577,8 +608,8 @@ class CCC
     {
         object ddd = (object)ppp; object sss = (object)ppp; return ppp switch
         {
-            DateTime => DDD((DateTime)ddd),
-            string => SSS((string)sss),
+            DateTime => DDD((DateTime)(object)ddd),
+            string => SSS((string)(object)sss),
             _ => 0,
         };
     }
@@ -621,8 +652,8 @@ class CCC
     {
         object uuu = (object)ppp; return ppp switch
         {
-            DateTime => DDD((DateTime)uuu),
-            string => SSS((string)uuu),
+            DateTime => DDD((DateTime)(object)uuu),
+            string => SSS((string)(object)uuu),
             _ => 0,
         };
     }
@@ -660,8 +691,8 @@ public class CCC
     {
         object sss = (object)ppp; return ppp switch
         {
-            string { Length: >= 5 } => (string)sss.Substring(0, 5),
-            string => (string)sss,
+            string { Length: >= 5 } => (string)(object)sss.Substring(0, 5),
+            string => (string)(object)sss,
         };
     }
 }
@@ -698,8 +729,8 @@ public class CCC
     {
         object sss = (object)ppp; object qqq = (object)ppp; return ppp switch
         {
-            string { Length: >= 5 } => (string)sss.Substring(0, 5),
-            string => (string)qqq,
+            string { Length: >= 5 } => (string)(object)sss.Substring(0, 5),
+            string => (string)(object)qqq,
         };
     }
 }
