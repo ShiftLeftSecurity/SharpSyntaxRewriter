@@ -57,9 +57,8 @@ namespace SharpSyntaxRewriter.Rewriters
                 }
             }
 
-            return replaceStmts
-                        ? stmts_P
-                        : stmts;
+            return replaceStmts ? stmts_P
+                                : stmts;
         }
 
         public override SyntaxNode VisitBlock(BlockSyntax node)

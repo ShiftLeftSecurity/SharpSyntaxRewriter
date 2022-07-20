@@ -40,8 +40,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
             return base.Visit(node);
         }
 
-        private SyntaxNode VisitStatements(SyntaxNode node,
-                                           SyntaxList<StatementSyntax> stmts)
+        private SyntaxList<StatementSyntax> VisitStatements(SyntaxList<StatementSyntax> stmts)
         {
             var replaceStmts = false;
             var stmts_P = SyntaxFactory.List<StatementSyntax>();
@@ -59,21 +58,17 @@ namespace SharpSyntaxRewriter.Rewriters.Types
                 stmts_P = stmts_P.Add((StatementSyntax)stmtP);
             }
 
-            return replaceStmts
-                        ? SyntaxFactory.Block(stmts_P)
-                        : node;
+            return replaceStmts ? stmts_P
+                                : stmts;
         }
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
         {
-            var node_P = (BlockSyntax)VisitStatements(node, node.Statements);
+            var stmts_P = VisitStatements(node.Statements);
 
-            return node_P.WithOpenBraceToken(node_P.OpenBraceToken
-                             .WithLeadingTrivia(node.OpenBraceToken.LeadingTrivia)
-                             .WithTrailingTrivia(node.OpenBraceToken.TrailingTrivia))
-                         .WithCloseBraceToken(node_P.CloseBraceToken
-                             .WithLeadingTrivia(node.CloseBraceToken.LeadingTrivia)
-                             .WithTrailingTrivia(node.CloseBraceToken.TrailingTrivia));
+            return stmts_P == node.Statements
+                    ? node
+                    : node.WithStatements(stmts_P);
         }
 
         public override SyntaxNode VisitSwitchSection(SwitchSectionSyntax node)
@@ -81,11 +76,11 @@ namespace SharpSyntaxRewriter.Rewriters.Types
             // A `switch' section is "special" in the sense that it may contain
             // multiple statements that are not surrounded by a lexical block.
 
-            var node_P = VisitStatements(node, node.Statements);
+            var stmts_P = VisitStatements(node.Statements);
 
-            return node_P != node
-                        ? node.WithStatements(((BlockSyntax)node_P).Statements)
-                        : node;
+            return stmts_P == node.Statements
+                    ? node
+                    : node.WithStatements(stmts_P);
         }
     }
 }
