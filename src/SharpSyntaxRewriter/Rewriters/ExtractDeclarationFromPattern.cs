@@ -44,9 +44,22 @@ namespace SharpSyntaxRewriter.Rewriters
             Debug.Assert(__exprs.Any());
             var expr = __exprs.Peek();
 
-            var varTy = __patterns.Any()
-                ? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword))
-                : varDesigTy;
+            TypeSyntax varTy;
+            ExpressionSyntax varExpr;
+            if (__patterns.Any())
+            {
+                varTy = SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword));
+                varExpr = expr;
+            }
+            else
+            {
+                varTy = varDesigTy;
+                varExpr =
+                    SyntaxFactory.CastExpression(
+                        SyntaxFactory.PredefinedType(
+                            SyntaxFactory.Token(SyntaxKind.ObjectKeyword)),
+                        expr);
+            }
 
             var declStmt =
                 SyntaxFactory.LocalDeclarationStatement(
@@ -59,7 +72,7 @@ namespace SharpSyntaxRewriter.Rewriters
                                 SyntaxFactory.EqualsValueClause(
                                     SyntaxFactory.CastExpression(
                                         varTy,
-                                        expr))))));
+                                        varExpr))))));
 
             _ctx.Peek().Add(declStmt);
         }
@@ -190,7 +203,12 @@ namespace SharpSyntaxRewriter.Rewriters
             if (varDesig.Identifier.Text != node.Identifier.Text)
                 return node;
 
-            return SyntaxFactory.CastExpression(pattType, node);
+            return SyntaxFactory.CastExpression(
+                pattType,
+                SyntaxFactory.CastExpression(
+                    SyntaxFactory.PredefinedType(
+                        SyntaxFactory.Token(SyntaxKind.ObjectKeyword)),
+                    node));
         }
     }
 }
