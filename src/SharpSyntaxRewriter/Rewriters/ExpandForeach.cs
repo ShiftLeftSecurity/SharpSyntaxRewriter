@@ -112,7 +112,7 @@ namespace SharpSyntaxRewriter.Rewriters
         {
             var foreachInfo = _semaModel.GetForEachStatementInfo(node);
 
-            var colTySym = foreachInfo.GetEnumeratorMethod.ContainingType;
+            var colTySym = foreachInfo.GetEnumeratorMethod?.ContainingType;
             var castTySym = _semaModel.GetTypeInfo(node.Type).Type;
             if (!ValidateSymbol(colTySym) || !ValidateSymbol(castTySym))
                 return node;
@@ -151,7 +151,7 @@ namespace SharpSyntaxRewriter.Rewriters
         {
             var foreachInfo = _semaModel.GetForEachStatementInfo(node);
 
-            var colTySym = foreachInfo.GetEnumeratorMethod.ContainingType;
+            var colTySym = foreachInfo.GetEnumeratorMethod?.ContainingType;
             if (!ValidateSymbol(colTySym))
                 return node;
 
