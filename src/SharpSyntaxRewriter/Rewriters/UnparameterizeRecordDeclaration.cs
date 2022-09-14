@@ -26,8 +26,7 @@ namespace SharpSyntaxRewriter.Rewriters
             if (ModifiersChecker.Has_abstract(node.Modifiers))
                 return node;
 
-            if (node.ParameterList == null
-                    || !node.ParameterList.Parameters.Any())
+            if (node.ParameterList == null)
                 return node;
 
             var node_P = node.WithModifiers(
