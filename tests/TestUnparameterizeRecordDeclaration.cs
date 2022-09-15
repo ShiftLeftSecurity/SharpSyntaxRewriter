@@ -215,7 +215,7 @@ public record Teacher
         }
 
         [TestMethod]
-        public void TEMP()
+        public void TestUnparameterizeRecordDeclarationEmptyParameterWithNonEmptyParameterAbstractBase()
         {
             var original = @"
 public abstract record Person(int ppp);
@@ -233,7 +233,7 @@ public record Teacher
         }
 
         [TestMethod]
-        public void TEMP2()
+        public void TestUnparameterizeRecordDeclarationEmptyParameterWithNonEmptyParameterBase()
         {
             var original = @"
 public record Person(int ppp);
