@@ -213,5 +213,42 @@ public record Teacher
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestUnparameterizeRecordDeclarationEmptyParameterWithNonEmptyParameterAbstractBase()
+        {
+            var original = @"
+public abstract record Person(int ppp);
+public record Teacher()
+    : Person(1);
+";
+
+            var expected = @"
+public abstract record Person(int ppp);
+public record Teacher
+    : Person { public Teacher() : base(1) {} }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
+        [TestMethod]
+        public void TestUnparameterizeRecordDeclarationEmptyParameterWithNonEmptyParameterBase()
+        {
+            var original = @"
+public record Person(int ppp);
+public record Teacher()
+    : Person(1);
+";
+
+            var expected = @"
+public record Person { public int ppp {get;init;} public Person(int ppp) { this.ppp=ppp; }}
+public record Teacher
+    : Person { public Teacher() : base(1) {} }
+";
+
+            TestRewrite_LinePreserve(original, expected);
+        }
+
     }
 }
