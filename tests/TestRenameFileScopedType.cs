@@ -197,6 +197,10 @@ internal class __FE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8
 
         [DataTestMethod]
         [DataRow("class")]
+        [DataRow("struct")]
+        [DataRow("record")]
+        [DataRow("enum")]
+        [DataRow("interface")]
         public void TestOccurrenceOfFileScopedTypeInCastingExpression(string declKind)
         {
             var original = $@"
@@ -212,7 +216,7 @@ file class Program
 
     void M()
     {{
-        N((I) null);
+        N((I) default);
     }}
 }}";
 
@@ -229,7 +233,7 @@ internal class __FE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8
 
     void M()
     {{
-        N((__FE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855__I) null);
+        N((__FE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855__I) default);
     }}
 }}";
             
