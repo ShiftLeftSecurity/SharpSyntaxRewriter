@@ -73,21 +73,7 @@ namespace SharpSyntaxRewriter.Rewriters
         {
             return VisitTypeDeclaration(node, _ => base.VisitRecordDeclaration(_) as RecordDeclarationSyntax);
         }
-
-        public override SyntaxNode VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
-        {
-            var node_P = base.VisitObjectCreationExpression(node) as ObjectCreationExpressionSyntax;
-
-            var objTypeSym = _semaModel.GetTypeInfo(node).ConvertedType as INamedTypeSymbol;
-
-            if (objTypeSym?.IsFileLocal ?? false)
-            {
-                return node_P.WithType(SyntaxFactory.ParseTypeName(SynthesizedTypeName(objTypeSym)).WithLeadingTrivia(node.Type.GetLeadingTrivia()).WithTrailingTrivia(node.Type.GetTrailingTrivia()));
-            }
-
-            return node_P;
-        }
-
+        
         public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
         {
             var node_P = base.VisitIdentifierName(node) as IdentifierNameSyntax;
@@ -95,7 +81,7 @@ namespace SharpSyntaxRewriter.Rewriters
             if (node.IsVar)
                 return node_P;
             
-            var nodeSym = _semaModel.GetTypeInfo(node).Type as INamedTypeSymbol;
+            var nodeSym = _semaModel.GetSymbolInfo(node).Symbol as INamedTypeSymbol;
 
             if (!(nodeSym?.IsFileLocal ?? false))
                 return node_P;
