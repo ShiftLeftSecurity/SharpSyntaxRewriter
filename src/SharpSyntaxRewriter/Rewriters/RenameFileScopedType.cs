@@ -24,12 +24,17 @@ namespace SharpSyntaxRewriter.Rewriters
                 .Replace('`', '_');
         }
 
-        private SyntaxNode VisitTypeDeclaration<T>(T node, Func<T, T> visit) where T : BaseTypeDeclarationSyntax
+        private static bool IsFileLocal(INamedTypeSymbol sym)
         {
-            var node_P = visit(node);
+            return sym?.IsFileLocal ?? false;
+        }
+
+        private SyntaxNode VisitTypeDeclaration<T>(T node, Func<T, SyntaxNode> visit) where T : BaseTypeDeclarationSyntax
+        {
+            var node_P = visit(node) as T;
             var nodeSym = _semaModel.GetDeclaredSymbol(node);
-            
-            if (nodeSym?.IsFileLocal ?? false)
+
+            if (IsFileLocal(nodeSym))
             {
                 var fileModifierToken = node_P.Modifiers.Single(token => token.IsKind(SyntaxKind.FileKeyword));
                 
@@ -51,27 +56,27 @@ namespace SharpSyntaxRewriter.Rewriters
         
         public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
         {
-            return VisitTypeDeclaration(node, _ => base.VisitClassDeclaration(_) as ClassDeclarationSyntax);
+            return VisitTypeDeclaration(node, base.VisitClassDeclaration);
         }
 
         public override SyntaxNode VisitStructDeclaration(StructDeclarationSyntax node)
         {
-            return VisitTypeDeclaration(node, _ => base.VisitStructDeclaration(_) as StructDeclarationSyntax);
+            return VisitTypeDeclaration(node, base.VisitStructDeclaration);
         }
 
         public override SyntaxNode VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
-            return VisitTypeDeclaration(node, _ => base.VisitInterfaceDeclaration(_) as InterfaceDeclarationSyntax);
+            return VisitTypeDeclaration(node, base.VisitInterfaceDeclaration);
         }
 
         public override SyntaxNode VisitEnumDeclaration(EnumDeclarationSyntax node)
         {
-            return VisitTypeDeclaration(node, _ => base.VisitEnumDeclaration(_) as EnumDeclarationSyntax);
+            return VisitTypeDeclaration(node, base.VisitEnumDeclaration);
         }
 
         public override SyntaxNode VisitRecordDeclaration(RecordDeclarationSyntax node)
         {
-            return VisitTypeDeclaration(node, _ => base.VisitRecordDeclaration(_) as RecordDeclarationSyntax);
+            return VisitTypeDeclaration(node, base.VisitRecordDeclaration);
         }
         
         public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
@@ -83,7 +88,7 @@ namespace SharpSyntaxRewriter.Rewriters
             
             var nodeSym = _semaModel.GetSymbolInfo(node).Symbol as INamedTypeSymbol;
 
-            if (!(nodeSym?.IsFileLocal ?? false))
+            if (!IsFileLocal(nodeSym))
                 return node_P;
 
             if (nodeSym.Name != node.Identifier.Text)
