@@ -252,7 +252,7 @@ namespace SharpSyntaxRewriter.Rewriters
             {
                 var ordExpr_P = (ExpressionSyntax)ord.Expression.Accept(this);
                 var arg = LambdaArgument(qryExpr.FromClause.Identifier.Text, ordExpr_P);
-                if (ord.AscendingOrDescendingKeyword.Kind() == SyntaxKind.DescendingKeyword)
+                if (ord.AscendingOrDescendingKeyword.IsKind(SyntaxKind.DescendingKeyword))
                     methName += "Descending";
                 callExpr = Invocation(callExpr, methName, arg);
                 methName = "ThenBy";

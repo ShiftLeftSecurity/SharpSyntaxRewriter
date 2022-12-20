@@ -28,7 +28,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var expr = node.Expression.Stripped();
             if (expr is DeclarationExpressionSyntax
-                    || node.RefKindKeyword.Kind() != SyntaxKind.OutKeyword
+                    || !node.RefKindKeyword.IsKind(SyntaxKind.OutKeyword)
                     || (expr is IdentifierNameSyntax identExpr
                             && identExpr.Identifier.Text == "_"))
             {
