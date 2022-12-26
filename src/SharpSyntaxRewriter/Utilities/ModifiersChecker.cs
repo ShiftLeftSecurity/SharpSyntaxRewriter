@@ -11,7 +11,7 @@ namespace SharpSyntaxRewriter.Utilities
     {
         private static bool HasByKind(SyntaxTokenList modifiers, SyntaxKind kind)
         {
-            return modifiers.Any(m => m.Kind() == kind);
+            return modifiers.Any(m => m.IsKind(kind));
         }
 
         public static bool Has_async(SyntaxTokenList modifiers)

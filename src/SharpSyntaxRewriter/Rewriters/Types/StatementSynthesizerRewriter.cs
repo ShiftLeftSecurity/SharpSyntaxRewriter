@@ -20,7 +20,7 @@ namespace SharpSyntaxRewriter.Rewriters.Types
         public override SyntaxNode Visit(SyntaxNode node)
         {
             if (node is StatementSyntax
-                    && node.Kind() != SyntaxKind.Block
+                    && !node.IsKind(SyntaxKind.Block)
                     && !(node.Parent is SwitchSectionSyntax))
             {
                 _ctx.Push(new List<StatementSyntax>());

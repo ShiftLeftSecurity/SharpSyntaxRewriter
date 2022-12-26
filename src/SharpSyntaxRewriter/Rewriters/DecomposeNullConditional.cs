@@ -237,11 +237,11 @@ namespace SharpSyntaxRewriter.Rewriters
         {
             bool decomp;
             if (node != null
-                    && node.Kind() == SyntaxKind.ConditionalAccessExpression
-                    && !(node.Parent.Kind() == SyntaxKind.ConditionalAccessExpression
-                        || node.Parent.Kind() == SyntaxKind.ExpressionStatement
-                        || node.Parent.Kind() == SyntaxKind.ParenthesizedLambdaExpression
-                        || node.Parent.Kind() == SyntaxKind.SimpleLambdaExpression))
+                    && node.IsKind(SyntaxKind.ConditionalAccessExpression)
+                    && !(node.Parent.IsKind(SyntaxKind.ConditionalAccessExpression)
+                        || node.Parent.IsKind(SyntaxKind.ExpressionStatement)
+                        || node.Parent.IsKind(SyntaxKind.ParenthesizedLambdaExpression)
+                        || node.Parent.IsKind(SyntaxKind.SimpleLambdaExpression)))
             {
                 decomp = true;
                 __ctx.Push(new __DecompositionInfo());
@@ -251,7 +251,7 @@ namespace SharpSyntaxRewriter.Rewriters
 
             var node_P = base.Visit(node);
 
-            if (decomp && node.Parent.Kind() != SyntaxKind.ExpressionStatement)
+            if (decomp && !node.Parent.IsKind(SyntaxKind.ExpressionStatement))
             {
                 return DecomposeIntoExpression(__ctx.Pop(), (ExpressionSyntax)node_P);
             }
