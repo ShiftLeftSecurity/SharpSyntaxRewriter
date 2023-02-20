@@ -883,5 +883,26 @@ class Test
 
             TestRewrite_LinePreserve(original, expected);
         }
+
+        [TestMethod]
+        public void TestDecomposeNullConditionalWithArrowExpressionConstructor()
+        {
+            var original = @"
+class C
+{
+    string r;
+    C(int? x) => r = x?.ToString() ?? ""was null"";
+}
+";
+
+            var expected = @"
+class C
+{
+    string r;
+    C(int? x) => r = ((object)x.Value == null) ? null : x.Value.ToString() ?? ""was null"";
+}
+";
+            TestRewrite_LinePreserve(original, expected);
+        }
     }
 }

@@ -4,7 +4,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -171,6 +170,11 @@ namespace SharpSyntaxRewriter.Rewriters
 
         public override SyntaxNode VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
+            if (node.ExpressionBody is not null)
+            {
+                return node.WithExpressionBody((ArrowExpressionClauseSyntax)node.ExpressionBody.Accept(this));
+            }
+
             return node.WithBody((BlockSyntax)node.Body.Accept(this));
         }
 
